@@ -16,8 +16,8 @@ loadPkg(packs)
 
 savePath <- "~/Dropbox/WTO/"
 
-filepath0 <- "../TandDdownloads/ENGLISH/"
-filepath1 <- "../TandDdownloads/MeetingNotes/"
+filepath0 <- "../TandDdownloads/ENGLISH/" ##all the docs
+filepath1 <- "../TandDdownloads/MeetingNotes/" ## just the meeting notes
 ## filepath2 <- "../MarketAccessDownloads/ENGLISH/"
 
 files0 <- list.files(path=filepath0,
@@ -52,7 +52,8 @@ length(files1) ##82
 
 for(i in 1:length(files1)) {
     print(i)
-    date[i] <-as.character(pdf_info(pdf=paste0(filepath1, files1[i]))$created)
+    date[i] <-as.character(pdf_info(pdf=paste0(filepath1,
+                                        files1[i]))$created)
     files[i] <- as.character(files1[i])
 }
 

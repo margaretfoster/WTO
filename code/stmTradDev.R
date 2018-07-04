@@ -16,8 +16,8 @@ loadPkg(packs)
 
 savePath <- "~/Dropbox/WTO/"
 
-filepath0 <- "../TandDdownloads/ENGLISH/"
-filepath1 <- "../TandDdownloads/MeetingNotes/"
+filepath0 <- "../TandDdownloads/ENGLISH/" ##all the docs
+filepath1 <- "../TandDdownloads/MeetingNotes/" ## just the meeting notes
 ## filepath2 <- "../MarketAccessDownloads/ENGLISH/"
 
 files0 <- list.files(path=filepath0,
@@ -52,7 +52,8 @@ length(files1) ##82
 
 for(i in 1:length(files1)) {
     print(i)
-    date[i] <-as.character(pdf_info(pdf=paste0(filepath1, files1[i]))$created)
+    date[i] <-as.character(pdf_info(pdf=paste0(filepath1,
+                                        files1[i]))$created)
     files[i] <- as.character(files1[i])
 }
 
@@ -71,24 +72,19 @@ head(metaData.TD)
 
 ##### Analysis
 ls()
-tradDevMCorpus <- corpus(tradeAndDev)
 
-processed <- textProcessor(tradDevCorpus,
+tradDevMCorpus <- corpus(tdMeetings)
+
+processed <- textProcessor(tradDevMCorpus,
                            metadata=metaData.TD)
 
-summary(processed) ## 267 x 17137 dictionary
+summary(processed) ## 82 docs 5781 word dictionary
 
 
 out <- prepDocuments(processed$documents,
                      processed$vocab,
                      processed$meta)
 
-
-##267 docs, 165343 tokens
-
-docs <- out$documents
-vocab <- out$vocab
-meta <- out$meta
 
 ##make date into a numeric:
 
@@ -97,13 +93,19 @@ out$meta$numdate <- as.numeric(out$meta$date)
 
 head(out$meta)
 
+##82 docs, 3614 terms, 56784 tokens
+
+docs <- out$documents
+vocab <- out$vocab
+meta <- out$meta
+
 set.seed(6889)
 
 mod.out <- stm(documents=docs,
                vocab=vocab,
-               K=20, 
-               prevalence=~s(numdate),
                data=meta,
+               K=20,
+               prevalence=~s(numdate),
                seed=6889)
 
 
