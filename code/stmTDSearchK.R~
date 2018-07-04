@@ -123,7 +123,7 @@ save(meta,docs, vocab,
      file=paste0(savePath, "tradeDevMeta.Rdata"))
 
 
-### select model:
+### searchk
 
 mod.sel <- selectModel(documents=docs,
                        vocab=vocab,
@@ -133,5 +133,4 @@ mod.sel <- selectModel(documents=docs,
                        seed=6889,
                        runs=50)
 
-plotModels(mod.sel)
 
