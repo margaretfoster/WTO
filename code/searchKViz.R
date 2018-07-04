@@ -1,9 +1,22 @@
-library(stm)
+A
+rm(list=ls())
+
+
+loadPkg=function(toLoad){
+    for(lib in toLoad){
+        if(! lib %in% installed.packages()[,1])
+            { install.packages(lib, repos='http://cran.rstudio.com/') }
+        suppressMessages( library(lib, character.only=TRUE) ) }}
+
+
+packs <- c('tm', 'stm')
+
+loadPkg(packs)
+
+savePath <- "~/Dropbox/WTO/"
 
 ## visualize the trade and development
                                         # search K
-load("tradeDevKsearch.Rdata" )
+load(paste0(savePath, "tradevsearchk.Rdata" ))
 
-ls()
-
-plot(first)
+plot.searchK(mod.tdsk)

@@ -30,10 +30,15 @@ load(paste0(savePath, 'tradDev20.RData'))
 load(paste0(savePath, 'tradeDevMeta.Rdata'))
 
 ls()
+
 class(meta)
 class(docs)
 
 head(meta)
+
+attributes(mod.out)
+
+
 
 ## stm:
 library(stmBrowser)
