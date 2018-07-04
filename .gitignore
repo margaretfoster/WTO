@@ -1,3 +1,17 @@
+
+
+## data
+
+rawdata/*
+metadata/DocsForMetadata/*
+TandDdownloads/*
+TradeAndEnivdownloads/*
+MarketAccessDownloads/*
+
+*.html
+*.pdf
+*.doc*
+
 # History files
 .Rhistory
 .Rapp.history
