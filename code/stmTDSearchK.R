@@ -22,10 +22,12 @@ load(paste0(savePath, "tradeDevMeta.Rdata"))
 
 ### searchk
 
-mod.tdsk <- selectModel(documents=docs,
+Ks=seq(from=4, to=26,by=2)
+
+mod.tdsk <- searchK(documents=docs,
                        vocab=vocab,
-                       K=seq(from=5, to=25,by=5),
-                       prevalence=~s(date),
+                       K=Ks,
+                       prevalence=~s(numdate),
                        data=meta,
                        seed=6889)
 

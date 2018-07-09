@@ -1,4 +1,4 @@
-A### Preliminary analysis of trade and development
+### Preliminary analysis of trade and development
 
 rm(list=ls())
 
@@ -12,7 +12,11 @@ loadPkg=function(toLoad){
 
 packs <- c('tm', 'stm', 'pdftools', 'tidyr', 'quanteda')
 
+packs2 <- c("stringr", "reshape2",  "dplyr", "ggplot2",  "magrittr")
+
 loadPkg(packs)
+loadPkg(packs2)
+
 
 savePath <- "~/Dropbox/WTO/"
 
@@ -37,25 +41,33 @@ tradeAndDev <- Corpus(URISource(paste0(filepath0, files0)),
 tdMeetings <- Corpus(URISource(paste0(filepath1, files1)),
                       readerControl = list(reader = readpdf))
 
-## marketAccess <-  Corpus(URISource(paste0(filepath2, files2)),
-##                         readerControl = list(reader = readpdf))
-## head(files0)
 
-###### tradeAndDev
+## ######tradeAndDev
+
+## UPDATE: still can't get document texts into
+## a format that can be added as column of the
+## metadata dataframe
+## text <- list()
+
+## for(i in 1:length(files1)){
+## text[i] <- tdMeetings[[i]]$content
+## }
 
 ### MetaData #2
  
 date <- vector()
 files <- vector()
 
-length(files1) ##82
 
 for(i in 1:length(files1)) {
     print(i)
     date[i] <-as.character(pdf_info(pdf=paste0(filepath1,
                                         files1[i]))$created)
     files[i] <- as.character(files1[i])
+
 }
+
+length(text)
 
 metaDataTD <- as.data.frame(cbind(date, files))
 dim(metaDataTD)
@@ -69,6 +81,7 @@ metaData.TD$date <- as.Date(metaData.TD$date)
 
 head(metaData.TD)
 
+head(files)
 
 ##### Analysis
 ls()
@@ -85,8 +98,8 @@ out <- prepDocuments(processed$documents,
                      processed$vocab,
                      processed$meta)
 
-
 ##make date into a numeric:
+
 
 out$meta$numdate <- as.numeric(out$meta$date)
 
