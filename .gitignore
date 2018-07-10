@@ -14,11 +14,13 @@ MarketAccessDownloads/*
 *.doc*
 
 # History files
+
 .Rhistory
 .Rapp.history
-
+*.DS_store
 # Session Data files
 .RData
+*.*~
 
 # Example code in package build process
 *-Ex.R

@@ -31,12 +31,19 @@ load(paste0(savePath, 'tradeDevMeta.Rdata'))
 
 ls()
 
-class(meta)
-class(docs)
-
 head(meta)
 
-attributes(mod.out)
+dim(meta)
+
+## read in full text in the csv:
+
+ft <- read.csv(paste0(savePath,"data/texts.csv"),
+               header=FALSE)
+
+dim(ft) ##81x1 ## NOTE DON'T Inspect--will crash R
+
+meta <- cbind(meta, ft)
+colnames(meta) <- c("date","time","files", "numdate", "fulltext")
 
 
 
@@ -44,7 +51,7 @@ attributes(mod.out)
 library(stmBrowser)
 
 stmBrowser(mod.out, data=meta, c("numdate"),
-                   text="files")
+                   text="fulltext")
 
 ## topic visualizing
 
