@@ -1,4 +1,6 @@
 import csv
+import os, glob
+
 def makeCSV(flist):
     with open('texts.csv', 'w') as csvfile:
         csvw = csv.writer(csvfile)
@@ -15,10 +17,14 @@ def makeCSV(flist):
         pass
     pass
 
-filelist = ["/Users/Promachos/Dropbox/WTO/data/" +
-          str(i) for i in range(1, 82)] ## 82 documents
+from glob import glob
 
-filelist=[f + ".txt" for f in filelist] ## 
+filelist = [path(f).abspath() for f in glob("/Users/Promachos/Dropbox/WTO/data/paras/*.txt")]
+
+## laptop path:
+##filelist = ["/Users/Promachos/Dropbox/WTO/data/paras/" +
+##          str(i) for i in range(1, 7505)] ## 82 documents
+##filelist=[f + ".txt" for f in filelist] ## 
 
 makeCSV(filelist)
 
