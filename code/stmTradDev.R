@@ -44,14 +44,9 @@ tdMeetings <- Corpus(URISource(paste0(filepath1, files1)),
 
 ## ######tradeAndDev
 
-## UPDATE: still can't get document texts into
-## a format that can be added as column of the
-## metadata dataframe
-## text <- list()
-
-## for(i in 1:length(files1)){
-## text[i] <- tdMeetings[[i]]$content
-## }
+##"texts.csv" is the file that has the document texts as a
+## single field in the columns. Texts.csv in ~/Dropbox/WTO/data/paras
+## is broken up by paragraphs
 
 ### MetaData #2
  
