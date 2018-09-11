@@ -1,3 +1,5 @@
+## script that takes a list of txt files
+## and moves them into a csv
 import csv
 import os, glob
 
@@ -11,7 +13,7 @@ def makeCSV(flist):
                     instr = instr + line
                     pass
                 print(instr)
-                csvw.writerow([instr])
+                csvw.writerow([f, instr]) ## writes file name in col1 and content in col2
                 pass
             pass
         pass
@@ -19,7 +21,9 @@ def makeCSV(flist):
 
 from glob import glob
 
-filelist = [path(f).abspath() for f in glob("/Users/Promachos/Dropbox/WTO/data/paras/*.txt")]
+## path on VCM:
+
+filelist = [os.path.abspath(f) for f in glob("/home/mjf34/WTO/paras/*.txt")]
 
 ## laptop path:
 ##filelist = ["/Users/Promachos/Dropbox/WTO/data/paras/" +
