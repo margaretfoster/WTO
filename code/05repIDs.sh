@@ -11,14 +11,33 @@
 for file in ${DIR}/*.txt;
 do
 
-    ## this looks for lines that start with "The representative(s)"
+    ## this looks for lines that start with "The representative(s)" and which may have leading spaces
     ## then takes the next three words
     ## then keeps only those that are capitalized
+    ## removes any stray commas
     ## keeps output on the same line (repleace grep's new line with a space)
     ## finally prints a new line at the end of each file search
 
-   printf "$file "
-   egrep "^The representative of|The representatives of" $file | cut -d' ' -f4-6 | grep -oP "\w*[A-Z]+\w*" | tr '\n' " "
-   echo
+    printf "$file "
+    ischar=`egrep "^\s*The [Cc]hair|The Secretariat|The Director" $file`
+    if [ "$ischar" != "" ]
+    then
+	printf "Chairman"
+    else
+	rep=`egrep "^\s*The representatives? of " $file`
+	if [ "$rep" != "" ]
+	then
+	    echo "$rep" | cut -d' ' -f4-6 | tr ' ' '\n' | grep  "^[A-Z]" | tr -d "," | tr '\n' " "
+	fi
+	
+    fi
+
+    del=`egrep "^\s*The delegate? of " $file`
+    if [ "$del" != "" ]
+    then
+	echo "$del" | cut -d' ' -f4-6 | tr ' ' '\n' | grep  "^[A-Z]" | tr -d "," | tr '\n' " "
+    fi
+
+    echo ""
 done
 

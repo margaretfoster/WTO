@@ -1,4 +1,4 @@
-A
+
 rm(list=ls())
 
 
@@ -13,10 +13,13 @@ packs <- c('tm', 'stm')
 
 loadPkg(packs)
 
-savePath <- "~/Dropbox/WTO/"
+dataPath <- "./"
+savePath <- "../visuals/"
 
 ## visualize the trade and development
                                         # search K
-load(paste0(savePath, "tradevsearchk.Rdata" ))
+load(paste0(dataPath, "tradDevKsearchParas1025.Rdata" ))
 
-plot.searchK(mod.tdsk)
+ls()
+
+plot.searchK(second)

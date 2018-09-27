@@ -4,6 +4,10 @@
 
 rawdata/*
 metadata/DocsForMetadata/*
+metadata/*.csv
+metadata/*.txt
+*/*.csv
+*/*.Rdata
 code/stm-visualization/*
 TandDdownloads/*
 TradeAndEnivdownloads/*
