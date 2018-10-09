@@ -77,7 +77,7 @@ forExport <- as.data.frame(as_adj(mutualStates,
                                   type="upper",
                                   sparse=FALSE))
 
-
+dim(forExport)
 ## Save data:
 
 write.csv(wto1,
