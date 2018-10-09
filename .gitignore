@@ -1,5 +1,4 @@
 
-
 ## data
 
 rawdata/*
@@ -8,6 +7,7 @@ metadata/*.csv
 metadata/*.txt
 */*.csv
 */*.Rdata
+*/*.RData
 code/stm-visualization/*
 TandDdownloads/*
 TradeAndEnivdownloads/*
@@ -25,6 +25,8 @@ MarketAccessDownloads/*
 # Session Data files
 .RData
 *.*~
+*.*#
+*/*.#
 
 # Example code in package build process
 *-Ex.R
