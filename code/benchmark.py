@@ -29,7 +29,10 @@ def read_csv():
                 i = i + 1
                 continue    
 
-            fname = row['X'] + '_' + row['docid'] + '_' + row['parnum'] + '.txt'
+            # This is used as a unique key to compare the same para-level data
+            # between hand-coded and actual sets
+            fname = row['X'] + '_' + row['docid'] + '_' + row['parnum'] + '.txt' 
+
             entitystring = row['Human-identified entities']
             entities = entitystring.split(',')
             for string in entities:
@@ -46,11 +49,10 @@ def nltk_entities(corpus, humancoded):
     results = dict()
     fileids = corpus.fileids()
     for fileid in fileids:
-        if fileid in humancoded: # only generate entities if we have human-coded copies
+        if fileid in humancoded: # Only generate entities if we have human-coded copies
             results[fileid] = set() # Ensure that for each fileid, all recorded entities are unique
             text = nltk.pos_tag(corpus.words(fileid))
-            for entity in nltk.ne_chunk(text):
-                # an entity is a (word, POStag) tuple
+            for entity in nltk.ne_chunk(text): # An entity is a (word, POStag) tuple
                 if isinstance(entity, nltk.tree.Tree):
                     etext = " ".join([word for word, tag in entity.leaves()])
                     label = entity.label()
@@ -78,6 +80,9 @@ def polyglot_entities(corpus, humancoded):
             print(fileid + ' ' + ', '.join(results[fileid]))
     return results
 
+"""
+Extract entities from each file using StanfordNER
+"""
 def stanford_entities(corpus, humancoded):
     # Stanford Model Loading
     model = r'/Users/Joyce/Desktop/stanford-ner-2018-10-16/classifiers/english.all.3class.distsim.crf.ser.gz'
@@ -170,16 +175,16 @@ def benchmark(handcoded, actual):
     return (accuracy, recall, precision)
 
 def main():
-    # extract_corpus()
+    # extract_corpus() # Run this in 11NER.py to generate corpus before running benchmark.py
     kddcorpus = nltk.corpus.PlaintextCorpusReader(CORPUS, '.*\.txt')
 
-    human_coded = read_csv()
-    nltk_identified = nltk_entities(kddcorpus, human_coded)
-    polyglot_identified = polyglot_entities(kddcorpus, human_coded)
-    stanford_identified = stanford_entities(kddcorpus, human_coded)
+    hand_coded = read_csv()
+    nltk_identified = nltk_entities(kddcorpus, hand_coded)
+    polyglot_identified = polyglot_entities(kddcorpus, hand_coded)
+    stanford_identified = stanford_entities(kddcorpus, hand_coded)
 
-    nltkstats = benchmark(human_coded, nltk_identified)
-    polyglotstats = benchmark(human_coded, polyglot_identified)
-    stanfordstats = benchmark(human_coded, stanford_identified)
+    nltkstats = benchmark(hand_coded, nltk_identified)
+    polyglotstats = benchmark(hand_coded, polyglot_identified)
+    stanfordstats = benchmark(hand_coded, stanford_identified)
 
 main()
