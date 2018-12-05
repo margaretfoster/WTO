@@ -3,6 +3,8 @@ import pandas as pd
 import csv
 import os
 import string
+import polyglot
+from polyglot.text import Text
 
 from nltk import word_tokenize, pos_tag, ne_chunk
 
@@ -39,18 +41,15 @@ Extract entities using the NLTK named entity chunker.
 Returns a dict mapping fileids to extracted PERSON, ORGANIZATION, GEOPOLITICAL, GEOGRAPHICAL 
 entities.
 """
-def nltk_entities(fileids, section, corpus, humancoded):
+def nltk_entities(corpus, humancoded):
     results = dict()
     # results = defaultdict(lambda: defaultdict(list))
-    fileids = fileids or corpus.fileids()
+    fileids = corpus.fileids()
     for fileid in fileids:
         if fileid in humancoded: # only generate entities if we have human-coded copies
             #print(fileid + '\n')
             results[fileid] = set() # Ensure that for each fileid, all recorded entities are unique
-            if section is not None:
-                text = nltk.pos_tag(nltk.word_tokenize(list(sectpull([fileid],section=section))[0][1]))
-            else:
-                text = nltk.pos_tag(corpus.words(fileid))
+            text = nltk.pos_tag(corpus.words(fileid))
             for entity in nltk.ne_chunk(text):
                 # an entity is a (word, POStag) tuple
                 if isinstance(entity, nltk.tree.Tree):
@@ -62,6 +61,31 @@ def nltk_entities(fileids, section, corpus, humancoded):
                     results[fileid].add(etext)
             print(fileid + ' ' + ', '.join(results[fileid]))
     return results
+
+"""
+Extract entities from each file using polyglot
+"""
+def polyglot_entities(corpus, humancoded):
+    results = dict()
+    fileids = corpus.fileids()
+    for fileid in fileids:
+        if fileid in humancoded:
+            results[fileid] = set() # Ensure that for each fileid, all recorded entities are unique
+            # print(fileid)
+            text = Text(corpus.raw(fileid))
+            text.hint_language_code = 'en'
+            for entity in text.entities:
+                etext = " ".join(entity)
+                if entity.tag == 'I-PER' or entity.tag == 'I-ORG' or entity.tag == 'I-locations':
+                    results[fileid].add(etext)
+            print(fileid + ' ' + ', '.join(results[fileid]))
+    return results
+
+def stanford_entities(corpus, humancoded):
+    # Stanford Model Loading
+    root  = os.path.expanduser('~/models/stanford-ner-2014-01-04/')
+    model = os.path.join(root, 'classifiers/english.muc.7class.distsim.crf.ser.gz')
+    jar   = os.path.join(root, 'stanford-ner-2014-01-04.jar')
 
 """
 Calculate precision, accuracy and recall based on 2 lists of handcoded and actual entities
@@ -119,9 +143,9 @@ def benchmark(handcoded, actual):
     recall /= float(num)
     precision /= float(num)
 
-    print "The accuracy is %r" % accuracy
-    print "The recall is %r" % recall
-    print "The precision is %r" % precision
+    print("The accuracy is %r" % accuracy)
+    print("The recall is %r" % recall)
+    print("The precision is %r" % precision)
 
     return (accuracy, recall, precision)
 
@@ -130,8 +154,11 @@ def main():
     kddcorpus = nltk.corpus.PlaintextCorpusReader(CORPUS, '.*\.txt')
 
     human_coded = read_csv()
-    nltk_identified = nltk_entities(None, None, kddcorpus, human_coded)
+    #nltk_identified = nltk_entities(kddcorpus, human_coded)
+    polyglot_identified = polyglot_entities(kddcorpus, human_coded)
 
-    nltkstats = benchmark(human_coded, nltk_identified)
+    #nltkstats = benchmark(human_coded, nltk_identified)
+    polyglotstats = benchmark(human_coded, polyglot_identified)
+
 
 main()
