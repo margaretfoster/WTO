@@ -43,11 +43,9 @@ entities.
 """
 def nltk_entities(corpus, humancoded):
     results = dict()
-    # results = defaultdict(lambda: defaultdict(list))
     fileids = corpus.fileids()
     for fileid in fileids:
         if fileid in humancoded: # only generate entities if we have human-coded copies
-            #print(fileid + '\n')
             results[fileid] = set() # Ensure that for each fileid, all recorded entities are unique
             text = nltk.pos_tag(corpus.words(fileid))
             for entity in nltk.ne_chunk(text):
@@ -71,9 +69,7 @@ def polyglot_entities(corpus, humancoded):
     for fileid in fileids:
         if fileid in humancoded:
             results[fileid] = set() # Ensure that for each fileid, all recorded entities are unique
-            # print(fileid)
-            text = Text(corpus.raw(fileid))
-            text.hint_language_code = 'en'
+            text = Text(corpus.raw(fileid), hint_language_code = 'en')
             for entity in text.entities:
                 etext = " ".join(entity)
                 if entity.tag == 'I-PER' or entity.tag == 'I-ORG' or entity.tag == 'I-locations':
@@ -112,10 +108,10 @@ def metrics(truth,run):
     recall = 0
     precision = 0
 
-    if len(truth) != 0:
+    if len(truth) != 0: # Avoid ZeroDivisionErrors
         accuracy = (float(TP)+float(TN))/float(len(truth))
         recall = (float(TP))/float(len(truth))
-    if (float(FP)+float(TP)) != 0:
+    if (float(FP)+float(TP)) != 0: # Avoid ZeroDivisionErrors
         precision = float(TP)/(float(FP)+float(TP))
     return (accuracy, recall, precision)
 
@@ -154,10 +150,10 @@ def main():
     kddcorpus = nltk.corpus.PlaintextCorpusReader(CORPUS, '.*\.txt')
 
     human_coded = read_csv()
-    #nltk_identified = nltk_entities(kddcorpus, human_coded)
+    nltk_identified = nltk_entities(kddcorpus, human_coded)
     polyglot_identified = polyglot_entities(kddcorpus, human_coded)
 
-    #nltkstats = benchmark(human_coded, nltk_identified)
+    nltkstats = benchmark(human_coded, nltk_identified)
     polyglotstats = benchmark(human_coded, polyglot_identified)
 
 
