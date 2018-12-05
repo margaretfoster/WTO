@@ -4,8 +4,9 @@ import csv
 import os
 import string
 import polyglot
-from polyglot.text import Text
 
+from polyglot.text import Text
+from nltk.tag import StanfordNERTagger
 from nltk import word_tokenize, pos_tag, ne_chunk
 
 BASE = os.path.join(os.path.dirname(__file__), "..")
@@ -79,9 +80,32 @@ def polyglot_entities(corpus, humancoded):
 
 def stanford_entities(corpus, humancoded):
     # Stanford Model Loading
-    root  = os.path.expanduser('~/models/stanford-ner-2014-01-04/')
-    model = os.path.join(root, 'classifiers/english.muc.7class.distsim.crf.ser.gz')
-    jar   = os.path.join(root, 'stanford-ner-2014-01-04.jar')
+    model = r'/Users/Joyce/Desktop/stanford-ner-2018-10-16/classifiers/english.all.3class.distsim.crf.ser.gz'
+    jar = r'/Users/Joyce/Desktop/stanford-ner-2018-10-16/stanford-ner.jar'
+    tagger  = StanfordNERTagger(model, jar)
+    
+    results = dict()
+    fileids = corpus.fileids()
+
+    for fileid in fileids:
+        if fileid in humancoded:
+            results[fileid] = set()
+            text  = corpus.words(fileid)
+            chunk = []
+            for token, tag in tagger.tag(text):
+                if tag == 'O':
+                    if chunk:
+                        # Flush the current chunk
+                        etext =  " ".join([c[0] for c in chunk])
+                        etag  = chunk[0][1]
+                        chunk = []
+                        if etag == 'PERSON' or etag == 'ORGANIZATION' or etag == 'LOCATION':
+                            results[fileid].add(etext)
+                else:
+                    # Build chunk from tags
+                    chunk.append((token, tag))
+            print(fileid + ' ' + ', '.join(results[fileid]))
+    return results
 
 """
 Calculate precision, accuracy and recall based on 2 lists of handcoded and actual entities
@@ -152,9 +176,10 @@ def main():
     human_coded = read_csv()
     nltk_identified = nltk_entities(kddcorpus, human_coded)
     polyglot_identified = polyglot_entities(kddcorpus, human_coded)
+    stanford_identified = stanford_entities(kddcorpus, human_coded)
 
     nltkstats = benchmark(human_coded, nltk_identified)
     polyglotstats = benchmark(human_coded, polyglot_identified)
-
+    stanfordstats = benchmark(human_coded, stanford_identified)
 
 main()
