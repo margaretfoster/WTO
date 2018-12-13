@@ -88,6 +88,29 @@ def nltk_entities(fileids, section, corpus):
     return results
 
 """
+Extract entities using the NLTK named entity chunker. 
+Returns a dict mapping fileids to extracted PERSON, ORGANIZATION, GEOPOLITICAL, GEOGRAPHICAL 
+entities, collapsed into a single section.
+"""
+def nltk_entities_merged(corpus):
+    results = dict()
+    fileids = corpus.fileids()
+    for fileid in fileids:
+        results[fileid] = set() # Ensure that for each fileid, all recorded entities are unique
+        text = nltk.pos_tag(corpus.words(fileid))
+        for entity in nltk.ne_chunk(text): # An entity is a (word, POStag) tuple
+            if isinstance(entity, nltk.tree.Tree):
+                etext = " ".join([word for word, tag in entity.leaves()])
+                label = entity.label()
+            else:
+                continue
+            if label == 'PERSON' or label == 'ORGANIZATION' or label == 'GPE' or label == 'GEO':
+                results[fileid].add(etext)
+        # print(fileid + ' ' + ', '.join(results[fileid]))
+    return results
+
+
+"""
 Utility function to convert json file containing paragraph-level entities to a .csv
 """
 def json_to_csv(jsonFile):
