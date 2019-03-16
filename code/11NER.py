@@ -2,6 +2,7 @@ import nltk
 import json
 import csv
 import numpy as np
+import pandas as pd
 import re
 import codecs
 import pandas
@@ -9,6 +10,7 @@ import string
 import os
 import subprocess
 import unicodedata
+from wbCountryCodes import wb_codes
 
 from collections import defaultdict
 from nltk import word_tokenize, pos_tag, ne_chunk
@@ -18,6 +20,11 @@ from nltk.chunk import conlltags2tree, tree2conlltags
 BASE = os.path.join(os.path.dirname(__file__), "..")
 DOCS = os.path.join(BASE, "data", "docs")
 CORPUS = os.path.join(BASE, "data", "corpus")
+
+
+# Define a dictionary mapping common geopolitical entities to World Bank codes
+
+
 
 """
 Extract paratext from WTOData.csv into .txt files for tagging
@@ -105,8 +112,10 @@ def nltk_entities_merged(corpus):
             else:
                 continue
             if label == 'PERSON' or label == 'ORGANIZATION' or label == 'GPE' or label == 'GEO':
-                results[fileid].add(etext)
-        # print(fileid + ' ' + ', '.join(results[fileid]))
+                if etext in wb_codes.keys(): # Only append country names
+                    results[fileid].add(etext)
+        results[fileid] = ', '.join(results[fileid])
+        print(fileid + " " + results[fileid])
     return results
 
 
@@ -117,14 +126,42 @@ def json_to_csv(jsonFile):
     with open(jsonFile) as jsondata:
         df = pandas.read_json(jsondata)
         df.to_csv(path_or_buf = r'/Users/Joyce/Desktop/2018/Johnson research/WTO/data/NER.csv')
-                
+
+
+def write_csv(entities):
+    with open(r'/Users/Joyce/Desktop/2018/Johnson research/WTO/code/WTOData.csv', encoding = 'latin1') as csvfile:
+        reader = csv.DictReader(csvfile)
+        data = []
+        # skip header row
+        i = 0
+        for row in reader:
+            if i == 0:
+                i = i + 1
+                continue    
+            # get entities from dict
+            k = row[''] + '_' + row['docid'] + '_' + row['parnum'] + '.txt'
+            print(k)
+
+            para = row['']
+            docid = row['docid']
+            parnum = row['parnum']
+            paratext = row['paratext']
+            countryspeaker = row['country.speaker']
+            date = row['date']
+            numdate = row['numdate']
+            ents = ", ".join(entities[k])
+            print(ents)
+            data.append((para, docid, parnum, paratext, countryspeaker, date, numdate, ents))
+        with open(r'/Users/Joyce/Desktop/2018/Johnson research/WTO/code/WTODataNew.csv', encoding = 'latin1') as csv_file:
+            writer = csv.writer(csv_file)
+            for para, docid, parnum, paratext, countryspeaker, date, numdate, ents in data:
+                writer.writerow([para, docid, parnum, paratext, countryspeaker, date, numdate, ents])
+        
 def main():
     # extract_corpus()
-    # kddcorpus = nltk.corpus.PlaintextCorpusReader(CORPUS, '.*\.txt')
-    # nltkents = nltk_entities(None, None, kddcorpus)
-    # with open('data.txt', 'w') as outfile:  
-    #     json.dump(nltkents, outfile)
-    # json_to_csv(r'/Users/Joyce/Desktop/2018/Johnson research/WTO/data.json')
+    kddcorpus = nltk.corpus.PlaintextCorpusReader(CORPUS, '.*\.txt')
+    nltkents = nltk_entities_merged(kddcorpus)
 
+    write_csv(nltkents)
 
 main()
