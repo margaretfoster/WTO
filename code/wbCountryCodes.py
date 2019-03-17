@@ -1,6 +1,8 @@
-# This is a dict mapping country names to World Bank codes
-# Original mapping can be found at https://wits.worldbank.org/wits/wits/witshelp/content/codes/country_codes.htm
-# Entries have been included where the formal name is not widely used, e.g. "Hong Kong, SAR, China" --> "Hong Kong"
+""" 
+This is a dict mapping country names to World Bank codes
+Original mapping can be found at https://wits.worldbank.org/wits/wits/witshelp/content/codes/country_codes.htm
+Entries have been included where the formal name is not widely used, e.g. "Hong Kong, SAR, China" --> "Hong Kong"
+"""
 
 wb_codes = {
 "Afghanistan": "AFG",
