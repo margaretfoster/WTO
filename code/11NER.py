@@ -21,11 +21,6 @@ BASE = os.path.join(os.path.dirname(__file__), "..")
 DOCS = os.path.join(BASE, "data", "docs")
 CORPUS = os.path.join(BASE, "data", "corpus")
 
-
-# Define a dictionary mapping common geopolitical entities to World Bank codes
-
-
-
 """
 Extract paratext from WTOData.csv into .txt files for tagging
 """
@@ -125,11 +120,11 @@ Utility function to convert json file containing paragraph-level entities to a .
 def json_to_csv(jsonFile):
     with open(jsonFile) as jsondata:
         df = pandas.read_json(jsondata)
-        df.to_csv(path_or_buf = r'/Users/Joyce/Desktop/2018/Johnson research/WTO/data/NER.csv')
+        df.to_csv(path_or_buf = r'/Users/Joyce/Desktop/Johnson research/WTO/data/NER.csv')
 
 
 def write_csv(entities):
-    with open(r'/Users/Joyce/Desktop/2018/Johnson research/WTO/code/WTOData.csv', encoding = 'latin1') as csvfile:
+    with open(r'/Users/Joyce/Desktop/Johnson research/WTO/code/WTOData.csv', encoding = 'latin1') as csvfile:
         reader = csv.DictReader(csvfile)
         data = []
         # skip header row
@@ -139,7 +134,8 @@ def write_csv(entities):
                 i = i + 1
                 continue    
             # get entities from dict
-            k = row[''] + '_' + row['docid'] + '_' + row['parnum'] + '.txt'
+            #k = row[''] + '_' + row['docid'] + '_' + row['parnum'] + '.txt'
+            k = row['']
             print(k)
 
             para = row['']
@@ -149,10 +145,11 @@ def write_csv(entities):
             countryspeaker = row['country.speaker']
             date = row['date']
             numdate = row['numdate']
-            ents = ", ".join(entities[k])
+            ents = entities[k]
+            # ents = ", ".join(entities[k])
             print(ents)
             data.append((para, docid, parnum, paratext, countryspeaker, date, numdate, ents))
-        with open(r'/Users/Joyce/Desktop/2018/Johnson research/WTO/code/WTODataNew.csv', encoding = 'latin1') as csv_file:
+        with open(r'/Users/Joyce/Desktop/Johnson research/WTO/data/WTODataNew.csv', mode = 'w', encoding = 'latin1') as csv_file:
             writer = csv.writer(csv_file)
             for para, docid, parnum, paratext, countryspeaker, date, numdate, ents in data:
                 writer.writerow([para, docid, parnum, paratext, countryspeaker, date, numdate, ents])
