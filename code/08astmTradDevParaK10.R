@@ -20,6 +20,8 @@ load("tradeandDevSTMOut.Rdata")
 ## only paragraphs more than 50 words
 load("tradeandDevSTMOut50Plus.Rdata")
 
+load(paste0(savePath, "tradDevParaLev10cens.RData"))
+
 ####################################
 ## STM
 ####################################
@@ -41,6 +43,7 @@ mod.out.10 <- stm(documents=docsfull,
 save(mod.out.10,
      file=paste0(savePath, "tradDevParaLev10.RData"))
 
+
 prep10 <- estimateEffect(c(1:10)~s(numdate) + docid,
                        mod.out.10,
                        metadata=metafull, documents=docsfull,
@@ -50,7 +53,6 @@ save(prep10,
      file=paste0(savePath, "estimateEffectParaLevTD10.Rdata"))
 
 #### Censored data
-
 
 docscens <- outcens$documents
 vocabcens <- outcens$vocab
@@ -76,3 +78,19 @@ prep10cens <- estimateEffect(c(1:10)~s(numdate) + docid,
 
 save(prep10cens,
      file=paste0(savePath, "estimateEffectParaLevTD10cens.Rdata"))
+
+
+### Update 3/19: reviewing the data:
+
+load("../analysis/tradDevParaLev10.RData")
+
+ls()
+
+summary(mod.out.10)
+
+ls()
+
+colnames(metafull)
+
+
+unique(metafull$country.speaker)
