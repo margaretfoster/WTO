@@ -48,10 +48,11 @@ set.seed(6889)
 
 mod.out.20.cens2 <- stm(documents=docscens,
                         vocab=vocabcens,
-                        max.em.its = 50,
+                        max.em.its = 100,
                         data=metacens,
                         K=5,
-                        prevalence=~s(numdate)*country.speaker, seed=6889)
+                        prevalence= ~ numdate*country.speaker,
+                        seed=6889)
  
 save(mod.out.20.cens2,
      file= "tradDevParaK20cens2.RData")
@@ -69,7 +70,7 @@ save(mod.out.20.cens2,
 ##      file=paste0(savePath, "estimateEffectTDK20cens.Rdata"))
 
 
-prep20censlarge <- estimateEffect(c(1:5)~s(numdate)* country.speaker,
+prep20censlarge <- estimateEffect(c(1:5)~ numdate* country.speaker,
                                   mod.out.20.cens2,
                                   metadata=metacens,
                                   documents=docscens,
