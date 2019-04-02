@@ -1,6 +1,6 @@
 ## script to generate a co-occurence network
 ## of speaker-> referenced countries in paragraphs
-
+ rm(list=ls())
 
 loadPkg=function(toLoad){
     for(lib in toLoad){
@@ -8,10 +8,13 @@ loadPkg=function(toLoad){
         { install.packages(lib, repos='http://cran.rstudio.com/') }
         suppressMessages( library(lib, character.only=TRUE) ) }}
 
-packs=c('dplyr', 'ggnetwork', 'ggplot2', 'readr', 'stringr', 'tnet',
+packs=c('dplyr', 'ggnetwork', 'ggplot2',
+        'readr', 'stringr', 'tnet',
         'network')
+
 loadPkg(packs)
 
+ 
 ## co-reference network data:
 ## no named columns
 ##V2= comm
@@ -20,6 +23,7 @@ loadPkg(packs)
 ## V5= speaker
 ##v6 = date
 ##V8 = referenced in the text
+
 
 data <- read.csv("../../data/WTODataNew.csv",
                  header=FALSE, stringsAsFactors=FALSE)
@@ -40,22 +44,22 @@ data$V8[which(data$V8=="")] <- "None"
 data <- subset(data, V8!="None") ## result= 6599x9
 
 ## Processing data:
-freqsums <- data.frame()
+## frequent senders:
+freqsends <- data.frame()
 for(y in unique(data$year)){
     x <- as.data.frame(cbind(table(
         summary(data[which(data$year==y),"V5"])),y))
     x$country <- rownames(x)
     rownames(x) <- 1:dim(x)[1]
-    freqsums <- rbind(freqsums, x)
+    freqsends <- rbind(freqsends, x)
 }
 
-dim(freqsums) ##1019 x3
+colnames(freqsends) <- c("paracount", "year", "country")
 
-head(freqsums)
+dim(freqsends) ##1019 x3
 
-freqsums[which(freqsums$y==2001),]
+head(freqsends)
 
-order(freqsums[which(freqsums$country=="China"),] )
 
 ## load the yearly objects:
 
@@ -82,15 +86,9 @@ c2009 <- cluster_walktrap(edges2009,
                           membership = TRUE)
 
 c2009 ## generates 4 groups
-### Visualizations
 
-pdf("testComs2009.pdf")
-plot(c2009, edges2009,
-     col = membership(c2009),
-     mark.groups = communities(c2009),
-     edge.color = c("black", "red"),
-     edge.curved=FALSE)
-dev.off()
+
+### Visualizations
 
 
 ##1995
@@ -186,12 +184,36 @@ dev.off()
 
 ##2006
 
-pdf(file="2006Edges.pdf")
-plot(edges2006,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
+
+vizfunction <- function(graphobj, filename){
+    
+    colvec <- ifelse(V(graphobj)$delta >= 0,
+                     "deeppink", "lightblue")
+    ## size of country names is .5 if in top
+    ## 75% of in-degree (ie: referred to)
+    ## for that year, else .25
+    labsiz <- ifelse(quantile(V(graphobj)$indeg)[4],
+                     0.5 , 0.25)
+
+    set.seed(6889)
+    pdf(file=filename)
+    plot(simplify(graphobj),
+         vertex.size=log(abs(V(graphobj)$delta))+.5,
+         edge.arrow.size=0.25,
+         vertex.label.dist=.1,
+         vertex.label.cex=labsiz,
+         vertex.color= colvec)
+    dev.off()
+}
+
+## entry of china (2000, 2001, 2002, 2003)
+vizfunction(edges2000,"2000HeirarchyGraph.pdf" )
+vizfunction(edges2001,"2001HeirarchyGraph.pdf" )
+vizfunction(edges2002,"2002HeirarchyGraph.pdf" )
+
+## after the financial crisis (2008, 2009)
+vizfunction(edges2008,"2008HeirarchyGraph.pdf" )
+vizfunction(edges2008,"2009HeirarchyGraph.pdf" )
 
 ##2007
 

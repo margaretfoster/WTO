@@ -120,7 +120,6 @@ write.csv(refTotal, file="refTotal.csv")
 
 
 ## Graphs:
-
 ## this takes the list of countries
 ## makes a single row per country that referenes
 ## another country
@@ -138,10 +137,14 @@ edges <- roster[,list]
 
 dim(edges)  ##10995x3
 
-
+## Create yearly graphs
+## with edges
+## and some edge metadata
 ## edgelist: V5 & refs
-##
-  
+
+## also a meta dataframe of the structural variables
+allnodes <- data.frame()
+
 for(y in unique(roster$year)){
     
     edges <- as.matrix(roster[which(roster$year==y),
@@ -150,17 +153,33 @@ for(y in unique(roster$year)){
     ## ugly character clean:
     edges <- gsub('[^a-zA-Z0-9.]', '', edges)
 
+    ## Make graph:
+    
     edges <-  graph_from_edgelist(edges,
                                   directed=TRUE)
-    ## make graphs:
+    ## Write in some metadata:
+    V(edges)$outdeg <- degree(edges, mode="out")
+    V(edges)$indeg <- degree(edges, mode="in")
+    V(edges)$delta <- V(edges)$outdeg - V(edges)$indeg
+    V(edges)$between <- betweenness(edges)
+
+    nodes <- cbind(as_data_frame(edges, "vertices"), y)
+    
     ## write data
     assign(paste0("edges", y), edges)
     ## send a message out
     print(paste0("done with year ", y))
+
+    ## update dataframe:
+    allnodes <- rbind(allnodes, nodes)
 }
 
 yearlyGraphObjects <- ls(pattern="*edges")
 ## Save the yearly objects:
 
 
-save(list=yearlyGraphObjects, file="yearlyWTORefGraphs.Rdata")
+save(list=yearlyGraphObjects,
+     file="yearlyWTORefGraphs.Rdata")
+
+write.csv(allnodes,
+     file="nodedeltas_all.csv")
