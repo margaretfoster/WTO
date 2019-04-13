@@ -60,8 +60,6 @@ spk$simple <- ifelse(spk$speaker %in% mostcommon,
 spk$big5 <- ifelse(spk$speaker %in% big5,
                    spk$speaker, "Other")
 
-spk$simpMeet <- 
-
 ## graph;
 ## colors with grey as 7 of 8:
 cols <- c("#D53E4F", "#FC8D59", "#FEE08B",
@@ -82,9 +80,13 @@ ss <- ss + theme(axis.text.x=element_blank(),
 ss
 dev.off() 
 
+
+###############################
+###Country-level:
+################################
+
 ## What happens to Venezuela over time:
 ## Do they become a pariah?
- 
 
 
 vz <- data[which(data$name=="Venezuela"),]
@@ -102,9 +104,78 @@ vv <- vv+ geom_line(data=vz,
                     color="darkred")
 
 vv <-  vv+  xlab("Years") + ylab("In and Out Degree Activity") +
-    ggtitle("Paragraph Activity for Venezuela\n In (blue) and Out (red) Degree")
+    ggtitle("Reference Activity for Venezuela\n In (blue) and Out (red) Degree")
 vv
 dev.off()
+
+### Japan
+
+jpn <- data[which(data$name=="Japan"),]
+
+jpn[order(jpn$y),]
+
+pdf(file="JapanActivity.pdf")
+vv<- ggplot(data=jpn,
+             aes(y=indeg,
+                 x=y))
+vv <- vv+ geom_line(color="lightskyblue") + theme_bw()
+vv <- vv+ geom_line(data=jpn,
+                     aes(y=outdeg,
+                         x=y),
+                    color="darkred")
+
+vv <-  vv+  xlab("Years") + ylab("In and Out Degree Activity") +
+    ggtitle("Reference Activity for Japan\n In (blue) and Out (red) Degree")
+vv
+
+dev.off()
+
+
+### Canada
+
+cdn <- data[which(data$name=="Canada"),]
+
+cdn[order(cdn$y),]
+
+pdf(file="CanadaActivity.pdf")
+vv<- ggplot(data=cdn,
+             aes(y=indeg,
+                 x=y))
+vv <- vv+ geom_line(color="lightskyblue") + theme_bw()
+vv <- vv+ geom_line(data=cdn,
+                     aes(y=outdeg,
+                         x=y),
+                    color="darkred")
+
+vv <-  vv+  xlab("Years") + ylab("In and Out Degree Activity") +
+    ggtitle("Paragraph Activity for Canada\n In (blue) and Out (red) Degree")
+vv
+dev.off()
+
+### switzerland
+
+
+ch <- data[which(data$name=="Switzerland"),]
+
+ch[order(ch$y),]
+
+pdf(file="SwitzerlandActivity.pdf")
+vv<- ggplot(data=ch,
+             aes(y=indeg,
+                 x=y))
+vv <- vv+ geom_line(color="lightskyblue") + theme_bw()
+vv <- vv+ geom_line(data=ch,
+                     aes(y=outdeg,
+                         x=y),
+                    color="darkred")
+
+vv <-  vv+  xlab("Years") + ylab("In and Out Degree Activity") +
+    ggtitle("Paragraph Activity for Switzerland\n In (blue) and Out (red) Degree")
+vv
+dev.off()
+
+
+##
 
 
 ## who has largest # of others referencing them
@@ -145,3 +216,91 @@ gg <- gg+  xlab("Years") + ylab("Out Degree - In Degree") +
 gg
 
 dev.off()
+
+
+## Disproportionate senders/ recievers 2001
+
+sr2001 <- data[which(data$y==2001),]
+
+dim(sr2001)
+
+## disproportional recievers
+sr2001[order(sr2001$delta), ][1:10,]
+## disproportional senders
+sr2001[order(sr2001$delta), ][72:82,]
+
+## most active senders
+sr2001[order(sr2001$outdeg), ][72:82,]
+
+## most active recievers
+sr2001[order(sr2001$indeg), ][72:82,]
+
+
+##
+## Disproportionate senders/ recievers 2002
+
+sr2002 <- data[which(data$y==2002),]
+
+dim(sr2002) ##86x7
+ 
+## disproportional recievers
+sr2002[order(sr2002$delta), ][1:10,]
+## disproportional senders
+sr2002[order(sr2002$delta), ][76:86,]
+
+
+## most active senders
+sr2002[order(sr2002$outdeg), ][76:86,]
+
+## most active recievers
+sr2002[order(sr2002$indeg), ][76:86,]
+
+## Disproportionate senders/ recievers 2008
+## after financial crisis
+
+sr2008 <- data[which(data$y==2008),]
+
+dim(sr2008) ##60x7
+ 
+## disproportional recievers
+sr2008[order(sr2008$delta), ][1:10,]
+## disproportional senders
+sr2008[order(sr2008$delta), ][50:60,]
+
+
+## most active senders
+sr2008[order(sr2008$outdeg), ][50:60,]
+
+## most active recievers
+sr2008[order(sr2008$indeg), ][50:60,]
+
+## Disproportionate senders/ recievers 2009
+## after financial crisis
+
+sr2008 <- data[which(data$y==2008),]
+
+dim(sr2008) ##60x7
+ 
+## disproportional recievers
+sr2008[order(sr2008$delta), ][1:10,]
+## disproportional senders
+sr2008[order(sr2008$delta), ][50:60,]
+
+
+## most active senders
+sr2008[order(sr2008$outdeg), ][50:60,]
+
+## most active recievers
+sr2008[order(sr2008$indeg), ][50:60,]
+
+
+ls()
+
+## what meetings do we have basically no data for:
+colnames(paradata)## V2 is meeting name
+
+lts <- as.data.frame(summary(as.factor(paradata$V2)))
+
+
+
+
