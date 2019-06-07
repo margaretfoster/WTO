@@ -119,6 +119,9 @@ def metrics(truth,run):
     truth = truth
     run = run
 
+    if float(len(truth)) == 0 and float(len(run)) == 0:
+        return (1, 1, 1)
+
     # True positives
     TP = float(len(set(run) & set(truth)))
     if float(len(run)) >= float(TP):
@@ -180,11 +183,11 @@ def main():
 
     hand_coded = read_csv()
     nltk_identified = nltk_entities(kddcorpus, hand_coded)
-    polyglot_identified = polyglot_entities(kddcorpus, hand_coded)
-    stanford_identified = stanford_entities(kddcorpus, hand_coded)
+    #polyglot_identified = polyglot_entities(kddcorpus, hand_coded)
+    #stanford_identified = stanford_entities(kddcorpus, hand_coded)
 
     nltkstats = benchmark(hand_coded, nltk_identified)
-    polyglotstats = benchmark(hand_coded, polyglot_identified)
-    stanfordstats = benchmark(hand_coded, stanford_identified)
+    #polyglotstats = benchmark(hand_coded, polyglot_identified)
+    #stanfordstats = benchmark(hand_coded, stanford_identified)
 
 main()
