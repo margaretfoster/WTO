@@ -2,7 +2,7 @@
 
 library(ggplot2)
 library(RColorBrewer)
-
+library(stm)
 
 data <-read.csv("~/Dropbox/WTO/data/nodedeltas_all.csv")
 

@@ -1,17 +1,17 @@
 ## script to generate a co-occurence network
 ## of speaker-> referenced countries in paragraphs
 
-
 loadPkg=function(toLoad){
     for(lib in toLoad){
         if(! lib %in% installed.packages()[,1])
         { install.packages(lib, repos='http://cran.rstudio.com/') }
         suppressMessages( library(lib, character.only=TRUE) ) }}
 
-packs=c('dplyr', 'ggnetwork', 'ggplot2', 'readr', 'stringr', 'tnet',
-        'network')
+packs=c('dplyr', 'ggnetwork', 'ggplot2',
+    'readr', 'stringr', 'tnet',
+    'network')
 
-        
+
 loadPkg(packs)
 
 ## co-reference network data:
@@ -23,7 +23,11 @@ loadPkg(packs)
 ##v6 = date
 ##V8 = referenced in the text
 
-data <- read.csv("../../data/WTODataNew.csv",
+## laptop
+dataPath <- "~/Dropbox/WTO/data/ner/"
+
+
+data <- read.csv(paste0(dataPath,"WTODataNew.csv"),
                  header=FALSE, stringsAsFactors=FALSE)
 
 data$V6 <- as.Date(data$V6, format="%m/%d/%y")
@@ -53,6 +57,7 @@ subset <- data[which(data$year==2005),]
 dim(subset)
 
 summary(subset$V5)
+
 ## which countries are the most common:
 ## produces an 82x 2 dataframe
 ## with entity and number of references.
@@ -68,7 +73,6 @@ sums
 
 
 as.data.frame(table(summary(data[which(data$year==2005),"V5"])))
-
 
 commonReferences <-  str_split(subset$V8,",") %>%
     trimws() %>%
@@ -129,6 +133,9 @@ library(tidyr)
 roster <- data %>%
     unnest(refs = str_split(V8, ","))
 
+write.csv(roster,
+          file=paste0(dataPath, "WTOrefDyads.csv"))
+
 ## just connections:
 
 list <- c("V5", "year", "refs")
@@ -157,11 +164,17 @@ for(y in unique(roster$year)){
     
     edges <-  graph_from_edgelist(edges,
                                   directed=TRUE)
+    ## keep only connected component:
+    edges<- delete_vertices(edges, which(degree(edges) < 1))
     ## Write in some metadata:
     V(edges)$outdeg <- degree(edges, mode="out")
     V(edges)$indeg <- degree(edges, mode="in")
     V(edges)$delta <- V(edges)$outdeg - V(edges)$indeg
     V(edges)$between <- betweenness(edges)
+    V(edges)$comm <- cluster_walktrap(edges, steps=4)
+    #V(edges)$alphacent <- alpha_centrality(edges)
+    ## V(edges)$authorcent <- authority_score(edges) #just the numbers
+   # V(edges)$powercent <- bonpow(edges)
 
     nodes <- cbind(as_data_frame(edges, "vertices"), y)
     
@@ -174,9 +187,27 @@ for(y in unique(roster$year)){
     allnodes <- rbind(allnodes, nodes)
 }
 
+
+## Some community membership graphs:
+
+
+wc2018 <- walktrap.community(edges2018, steps=2)
+plot(wc2018, edges2018,
+     vertex.color=membership(wc),
+     mark.border="black",
+     #mark.col=c("tan", "pink", "lightgray"),  
+     vertex.size=2,
+     label.cex=.55,
+     edge.arrow.size=.2)
+
+
 yearlyGraphObjects <- ls(pattern="*edges")
 ## Save the yearly objects:
 
+
+modularity(wc2018)
+
+wc
 
 save(list=yearlyGraphObjects,
      file="yearlyWTORefGraphs.Rdata")

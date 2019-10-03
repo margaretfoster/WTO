@@ -25,7 +25,7 @@ loadPkg(packs)
 ##V8 = referenced in the text
 
 
-data <- read.csv("../../data/WTODataNew.csv",
+data <- read.csv("~/Dropbox/WTO/data/NER/WTODataNew.csv",
                  header=FALSE, stringsAsFactors=FALSE)
 
 data$V6 <- as.Date(data$V6, format="%m/%d/%y")
@@ -72,7 +72,6 @@ edges2005
 df2005e <- as_data_frame(edges2005, what="edges")
 df2005n <- as_data_frame(edges2005, what="vertices")
 
-class(df2005)
 
 head(df2005n)
 head(df2005e)
@@ -184,9 +183,7 @@ dev.off()
 
 ##2006
 
-
 vizfunction <- function(graphobj, filename){
-    
     colvec <- ifelse(V(graphobj)$delta >= 0,
                      "deeppink", "lightblue")
     ## size of country names is .5 if in top
@@ -317,3 +314,100 @@ dev.off()
 ##      vertex.color="lightgreen")
 ## dev.off()
 
+##### communities:
+
+#vizfunction <- function(graphobj, filename){
+
+wc2005 <-walktrap.community(edges2005, steps=2)
+membership(wc2005)
+
+wc2007 <-walktrap.community(edges2007, steps=2)
+wc2008 <-walktrap.community(edges2008, steps=2)
+wc2009 <-walktrap.community(edges2009, steps=2)
+wc2010 <-walktrap.community(edges2010, steps=2)
+wc2011 <-walktrap.community(edges2011, steps=2)
+wc2012 <-walktrap.community(edges2012, steps=2)
+wc2013 <-walktrap.community(edges2013, steps=2)
+wc2014 <-walktrap.community(edges2014, steps=2)
+wc2015 <-walktrap.community(edges2015, steps=2)
+wc2016 <-walktrap.community(edges2016, steps=2)
+wc2017 <-walktrap.community(edges2017, steps=2)
+wc2018 <-walktrap.community(edges2018, steps=2)
+
+
+
+dev.off()
+set.seed(6889)
+
+### Manually do edges:
+##pdf(file="2005EdgesCommunity.pdf")
+
+
+
+par(mfrow=c(2,2))
+
+##Obama: 2012-2017
+## Trump: 2017-
+
+
+pdf(file="2015Community.pdf")
+plot(simplify(edges2015),
+     vertex.size=5,
+     edge.arrow.size=0.15,
+     vertex.label.dist=.1,
+     vertex.label.cex=.65,
+     main="2015 Edges",
+     vertex.color= wc2015$membership)
+dev.off()
+
+pdf(file="2016Community.pdf")
+plot(simplify(edges2016),
+     vertex.size=5,
+     edge.arrow.size=0.15,
+     vertex.label.dist=.1,
+     vertex.label.cex=.65,
+     main="2016 Edges",
+     vertex.color= wc2016$membership)
+dev.off()
+
+pdf(file="2017Community.pdf")
+plot(simplify(edges2017),
+     vertex.size=5,
+     edge.arrow.size=0.15,
+     vertex.label.dist=.1,
+     vertex.label.cex=.65,
+     main="2017 Edges",
+     vertex.color= wc2017$membership)
+dev.off()
+
+pdf(file="2018Community.pdf")
+plot(simplify(edges2018),
+     vertex.size=5,
+     edge.arrow.size=0.15,
+     vertex.label.dist=.1,
+     vertex.label.cex=ifelse(degree).65,
+     main="2018 Edges",
+     vertex.color= wc2018$membership)
+dev.off()
+
+
+
+
+
+vertex_attr(edges2018)
+## set an attribute that is
+## red if in 75% or higher of
+## indegree references
+
+set_vertex_attr(edges2018,
+                name= "highIn",
+                index=which(V(edges2018)$indeg >= quantile(V(edges2018)$indeg, .75)),
+                value= "red")
+
+
+#dev.off()
+
+## Want visualization for 2015/2016 and then
+## for 2017/2018
+
+ls()
