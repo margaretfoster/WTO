@@ -1,9 +1,6 @@
-## This script to generate the
-## data needed for a structural topic model
-## with covariates:
-## US Administration
-## Trade Rep?
-## (and new representative)
+## This script to make STM models
+## Follows from 15 (data prep and searchK)
+## and 15b (plotting the searchK data)
 
 
 rm(list=ls())
@@ -56,64 +53,14 @@ out$meta$refbig5 <- as.factor(out$meta$refbig5)
 
 bigFiveName <- levels(out$meta$refbig5)
 
-
-#### Search K b/c no prior on optimal number of
-## topics to look for:
-
-
-Ksweep=c(5, 10, 15, 20, 25, 30)
-Ksweep.large=c(15, 20, 25, 30, 35, 40, 45, 50) ## 9+ hoursY to run...
-    
-search.wide <- searchK(documents=out$documents,
-              data=out$meta,
-              vocab=out$vocab,
-              K=Ksweep,
-              content= ~ refbig5,
-                       prevalence = ~ refbig5 * trump)
-
-save(search.wide,
-     file="WTOSearchKwide.Rdata")
-
-
-plot(search.wide) ## from 20-30, lilihood keeps increasing, slope narrows #
-## but doesn't become negigible 
-
-
-search.wide2 <- searchK(documents=out$documents,
-                        data=out$meta,
-                        vocab=out$vocab,
-                        K=Ksweep.large,,
-                        content= ~ refbig5,
-                       prevalence = ~ refbig5 * trump)
- 
-
-save(search.wide2,
-     file="WTOSearchkWideTo50.Rdata")
-
-plot(search.wide2)
-
-summary(search.wide2)
-
-
-
-search.wide3 <- searchK(documents=out$documents,
-                        data=out$meta,
-                        vocab=out$vocab,
-                        K=c(50, 55, 60, 65, 70, 75, 100),
-                        content= ~ refbig5,
-                        prevalence = ~ refbig5 * trump)
-
-plot(search.wide3)
- save(search.wide3,
-     file="WTOSearchKwide3.Rdata")
-
 ################
 
 
 model1 <- stm(documents=out$documents,
               data=out$meta,
               vocab=out$vocab,
-              K=10,
+              K=35,
+              seed=6889,
               content= ~ refbig5,
               prevalence = ~ refbig5 * trump) 
 
@@ -128,14 +75,69 @@ prep <- estimateEffect(1:10 ~ refbig5 * trump,
 sagelabs <- sageLabels(model1, 10)
 
 
-modelk6 <- stm(documents=out$documents,
+plot(prep, covariate="refbig5",
+     model= model1,
+     moderator="trump",
+     moderator.value=0)
+
+summary(model1)
+
+plot(model1)
+
+cors <- topicCorr(model1,
+                  method="simple",
+                  cutoff=.15)
+
+set.seed(6889)
+plot(cors,
+     vertex.size=.75,
+     color="gray"
+     )
+
+####
+## k=10 doensn't really tell me a story
+## same with k=15, looks like a bunch of stray words in some of the country-topic covariates, and some are empty for a country...
+
+
+modelk30 <- stm(documents=out$documents,
               data=out$meta,
               vocab=out$vocab,
-              K=6,
+              K=30,
               content= ~ refbig5,
               prevalence = ~ refbig5 * trump) 
 
+summary(modelk30)
+
+plot(modelk30)
+
+
+modelk40 <- stm(documents=out$documents,
+              data=out$meta,
+              vocab=out$vocab,
+              K=40,
+              content= ~ refbig5,
+              prevalence = ~ refbig5 * trump) 
+
+summary(modelk30)
+
+plot(modelk30)
+
+
+## human-interpretable:
+modelk9 <- stm(documents=out$documents,
+              data=out$meta,
+              vocab=out$vocab,
+              K=9,
+              content= ~ refbig5,
+              prevalence = ~ refbig5 * trump) 
+
+summary(modelk9)
+
+plot(modelk30)
+
+
 ## changes in effect by reference to
+
 
 dev.off()
 
