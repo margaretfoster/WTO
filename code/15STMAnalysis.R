@@ -12,13 +12,12 @@ rm(list=ls())
 ##library(RColorBrewer)
 library(stm)
 
+## Load data:
 load("WTOParagraphDataForSTM.Rdata")
-
 colnames(paradata)
 
 
-## Data:
-##
+## Process the data:
 
 which(is.na(paradata)) ## no nas here
 
@@ -57,167 +56,72 @@ out$meta$refbig5 <- as.factor(out$meta$refbig5)
 bigFiveName <- levels(out$meta$refbig5)
 
 
+## make a metadata row for factor
+## of administration:
+
+out$meta$admin <- ifelse(out$meta$clinton==1,"clinton",
+                         ifelse(out$meta$bush==1,"bush",
+                                ifelse(out$meta$obama==1,"obama",
+                                       ifelse(out$meta$trump==1,"trump",
+                                              ifelse(out$meta$bushobmtrans==1,"transition",
+                                                     ifelse(out$meta$obtrumptrans==1,"transition", "other"))))))
+
+out$meta$admin <- as.factor(out$meta$admin)
+
+summary(out$meta$admin) ## no other, which is good
+
+
+
+                         
+## Because no priors,  start with the built-in
+## STM spectral, K=0 and see what we get
 #### Search K b/c no prior on optimal number of
 ## topics to look for:
 
-
-Ksweep=c(5, 10, 15, 20, 25, 30)
-Ksweep.large=c(15, 20, 25, 30, 35, 40, 45, 50) ## 9+ hoursY to run...
-    
-search.wide <- searchK(documents=out$documents,
-              data=out$meta,
-              vocab=out$vocab,
-              K=Ksweep,
-              content= ~ refbig5,
-                       prevalence = ~ refbig5 * trump)
-
-save(search.wide,
-     file="WTOSearchKwide.Rdata")
+## With this seed: 50 topics, and aspect 6 (US, post trump) words are
+## frustration words
+nopriorfit <- stm(documents=out$documents,
+                   data=out$meta,
+                   vocab=out$vocab,
+                   seed=6889,
+                   K=0, ## will search for what the algorithm propses
+                   init.type="Spectral",
+                   content= ~ refbig5,
+                   prevalence = ~ trump*refbig5)
 
 
-plot(search.wide) ## from 20-30, lilihood keeps increasing, slope narrows #
-## but doesn't become negigible 
+save(nopriorfit,
+     file="noprioronfitWTOSTM.Rdata")
+
+## Full model:
 
 
-search.wide2 <- searchK(documents=out$documents,
-                        data=out$meta,
-                        vocab=out$vocab,
-                        K=Ksweep.large,,
-                        content= ~ refbig5,
-                       prevalence = ~ refbig5 * trump)
- 
-
-save(search.wide2,
-     file="WTOSearchkWideTo50.Rdata")
-
-plot(search.wide2)
-
-summary(search.wide2)
+## with dummy for paragraphs that are in the
+## trump admin
+nopriorfit.mod <- stm(documents=out$documents,
+                      data=out$meta,
+                      vocab=out$vocab,
+                      seed=6889,
+                      K=50, 
+                      init.type="Spectral",
+                      content= ~ refbig5,
+                      prevalence = ~ trump*refbig5)
 
 
-
-search.wide3 <- searchK(documents=out$documents,
-                        data=out$meta,
-                        vocab=out$vocab,
-                        K=c(50, 55, 60, 65, 70, 75, 100),
-                        content= ~ refbig5,
-                        prevalence = ~ refbig5 * trump)
-
-plot(search.wide3)
- save(search.wide3,
-     file="WTOSearchKwide3.Rdata")
-
-################
+## with administration as a factor
+## rather than a dummy for Trump Admin
+nopriorfit.mod2 <- stm(documents=out$documents,
+                       data=out$meta,
+                       vocab=out$vocab,
+                       seed=6889,
+                       K=50, 
+                       init.type="Spectral",
+                       content= ~ refbig5,
+                       prevalence = ~ admin*refbig5)
 
 
-model1 <- stm(documents=out$documents,
-              data=out$meta,
-              vocab=out$vocab,
-              K=10,
-              content= ~ refbig5,
-              prevalence = ~ refbig5 * trump) 
+save(nopriorfit.mod,
+     file="nopriorfit_mod.Rdata")
 
-summary(model1)
-plot(model1)
-
-prep <- estimateEffect(1:10 ~ refbig5 * trump,
-                       model1,
-                       meta = out$meta,
-                       uncertainty = "Global")
-
-sagelabs <- sageLabels(model1, 10)
-
-
-modelk6 <- stm(documents=out$documents,
-              data=out$meta,
-              vocab=out$vocab,
-              K=6,
-              content= ~ refbig5,
-              prevalence = ~ refbig5 * trump) 
-
-## changes in effect by reference to
-
-dev.off()
-
-plot(prep, "refbig5",
-     topics=c(10),
-     method="pointestimate",
-     labeltype="custom",
-     custom.labels=bigFiveName,
-     xlab="Mean topic proportion in corpus")
-
-## cov.betas in sageLabels
-dev.off()
-
-par(mfrow=c(1, 2))
-
-plot(prep, "trump",
-     method="difference",
-     moderator="refbig5",
-     moderator.value="United States",
-     cov.value1=0,
-     cov.value2=1,
-     model=model1,
-     verbose.labels = FALSE,
-     xlab="Change in Topics In Paras Referencing US")
-
-
-plot(prep, "trump",
-     model=model1,
-     ##method="continuous",
-     moderator="refbig5",
-     moderator.value="China",
-     method="difference",
-     cov.value1=0,
-     cov.value2=1,
-##     add=TRUE,
-   ## printlabel=FALSE,
-     verbose.labels = FALSE,
-     xlab="Change in Topics In Paras Referencing China)")
-
-
-
-plot(model1,
-     type="perspectives",
-     covarlevels = c(0, 1),
-     topics=c(7, 9))
-
-
-##Using Brandon Stewart's code
-## From Text for Roberts Et Al,
-## "A Model of Text for Experimentation in the Social Sciences"
-
-dev.off()
-
-plotQuote(c(paste(sagelabs$cov.betas[[2]]$problabels[10,], collapse="\n"),
-            paste(sagelabs$cov.betas[[6]]$problabels[10,], collapse="\n")))
-text(x=2.5,
-     y=6.0,
-     "Topic 10 Words in Pararaphs Referring to China", cex=1.1)
-text(x=2.5,
-     y=3.2,
-     "Topic 10 Words in Paragraphs Referring to United States", cex=1.1)
-
-
-
-### Replicating Roberts et al figure 7:
-## for my topic 10
-
-dev.off()
-
-plotQuote(c(paste(sagelabs$cov.betas[[1]]$problabels[10,], collapse="\n"),
-            paste(sagelabs$cov.betas[[2]]$problabels[10,], collapse="\n"),
-            paste(sagelabs$cov.betas[[3]]$problabels[10,], collapse="\n"),
-            paste(sagelabs$cov.betas[[4]]$problabels[10,], collapse="\n"),
-            paste(sagelabs$cov.betas[[6]]$problabels[10,], collapse="\n")), width=40)
-text(.5,4.5,"Ref to Canada", cex=1.1)
-text(.5,3.5,"Ref to China", cex=1.1)
-text(.5,2.5,"Ref to Egypt", cex=1.1)
-text(.5,1.5,"Ref to India", cex=1.1)
-text(.5,0.5,"Ref to US", cex=1.1)
-
-
-ls()
-
-
-plot(sagelabs)
+save(nopriorfit.mod2,
+     file="nopriorfit_adminmod.Rdata")

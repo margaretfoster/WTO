@@ -118,7 +118,7 @@ modelk40 <- stm(documents=out$documents,
               content= ~ refbig5,
               prevalence = ~ refbig5 * trump) 
 
-summary(modelk30)
+summary(modelk40)
 
 plot(modelk30)
 

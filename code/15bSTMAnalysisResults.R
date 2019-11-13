@@ -9,10 +9,13 @@ rm(list=ls())
 ##library(RColorBrewer)
 library(stm)
 
-load("WTOSearchKwide.Rdata") ## 
-load("WTOSearchkWideTo50.Rdata") ## K= 15-50
+##load("WTOSearchKwide.Rdata") ## 
+##load("WTOSearchkWideTo50.Rdata") ## K= 15-50
+load("WTOSearchK40to50by3.Rdata")
 
-plot(search.wide) ## 5-30
+class(search.wide)
+
+plot(search.wide) ## 40- 50 by 3
 plot(search.wide2) ## 15-50
 
 ## Save for future reference:
