@@ -110,11 +110,11 @@ centscores[1600:1653,]
 
 
 
-p2 <- ggplot() + geom_point(aes(y=between,
-                                x=y,
-                                colour=name),
-                            data=centscores[1600:1653,],
-                            stat="identity")
-p2 <- p2+theme_bw()
-
-p2
+p1 <- ggplot() + geom_line(aes(y = between,
+                               x = y,
+                               colour = name),
+                           data = group,
+                           stat="identity")
+p1 <- p1 + theme_bw() + xlim(1995, 2019)
+p1 <- p1 +  
+p1

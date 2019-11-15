@@ -1,6 +1,10 @@
 ## script to generate a co-occurence network
 ## of speaker-> referenced countries in paragraphs
 
+## Update 11/19: need to remove loops
+## those are paragraphs where the "reference"
+## to the country is that country's rep speaking
+
 loadPkg=function(toLoad){
     for(lib in toLoad){
         if(! lib %in% installed.packages()[,1])
@@ -32,10 +36,26 @@ data <- read.csv(paste0(dataPath,"WTODataNew.csv"),
 
 data$V6 <- as.Date(data$V6, format="%m/%d/%y")
 
+length(which(data$V5==data$V8)) ## 2979
+
+loops <- which(data$V5==data$V8)
+
+data <- subset(data, !(data$V5==data$V8))
+
+dim(data) ## 10832
+
+## the other entry point of noise is where
+## a country "references itself"
+## which is really when "the speaker xx." also references
+## other countries. Pref to take that out via the graph simplify call
+## because is useful info
+
+refs <- which(data$V5 %in% data$V8) 
 
 ## Clean up some variables:
 
-##create a year
+##Create a column for year:
+
 summary(data$V6)
 
 library(lubridate)
@@ -100,7 +120,7 @@ for(y in unique(data$year)){
     refTotal <- rbind(refTotal, commonReferences)
 }
 
-dim(refTotal) #571x3
+dim(refTotal) #290x3
 
 head(refTotal)
 refTotal$. <- as.character(refTotal$.)
@@ -109,7 +129,9 @@ refTotal$. <- as.character(refTotal$.)
 
 USRefs <- arrange(refTotal[which(refTotal$.=="United States"),], year)
 
-plot(USRefs)
+USRefs
+
+plot(USRefs$Freq~USRefs$year)
 
 ## Singapore is very frquently  referenced in 1996
 
@@ -142,7 +164,7 @@ list <- c("V5", "year", "refs")
 
 edges <- roster[,list]
 
-dim(edges)  ##10995x3
+dim(edges)  ##8016
 
 ## Create yearly graphs
 ## with edges
@@ -164,8 +186,12 @@ for(y in unique(roster$year)){
     
     edges <-  graph_from_edgelist(edges,
                                   directed=TRUE)
+  
     ## keep only connected component:
     edges<- delete_vertices(edges, which(degree(edges) < 1))
+
+    ## remove loops:
+    edges <- simplify(edges)
     ## Write in some metadata:
     V(edges)$outdeg <- degree(edges, mode="out")
     V(edges)$indeg <- degree(edges, mode="in")
@@ -187,30 +213,15 @@ for(y in unique(roster$year)){
     allnodes <- rbind(allnodes, nodes)
 }
 
-
-## Some community membership graphs:
-
-
-wc2018 <- walktrap.community(edges2018, steps=2)
-plot(wc2018, edges2018,
-     vertex.color=membership(wc),
-     mark.border="black",
-     #mark.col=c("tan", "pink", "lightgray"),  
-     vertex.size=2,
-     label.cex=.55,
-     edge.arrow.size=.2)
-
+class(allnodes)
 
 yearlyGraphObjects <- ls(pattern="*edges")
 ## Save the yearly objects:
 
-
-modularity(wc2018)
-
-wc
-
 save(list=yearlyGraphObjects,
      file="yearlyWTORefGraphs.Rdata")
+
+allnodes <- apply(allnodes,2,as.character) ## fixes an encoding error
 
 write.csv(allnodes,
      file="nodedeltas_all.csv")

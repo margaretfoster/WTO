@@ -9,16 +9,87 @@ library(stm)
 
 ## Load processed data and model:
 
-load("nopriorfit_adminmod.Rdata") ## with admin as the covariate
-
-load("nopriorfit_mod.Rdata") ## model with trump binary
+load("nopriorfit_mod.Rdata") ## model with trump binary, countries as content covariate
 
 load("WTOParagraphDataForSTM.Rdata") ## underlying data
 load("WTObasemodel-out.Rdata")
+
+ls()
+
+## To present the frequency of the "big 5"
+## at some point want to unlist the columns with more
+## than one
+
+references.table <- as.data.frame(table(out$meta$refs))
+references.table <- references.table[order(-references.table$Freq),]
+head(references.table)
+
+
 ## visualization and results
 
+## plot topics greater than 5% of corpus:
+## Cut into intervals of 10 topics:
 
-#### Estimate effect:                                                                                                                                        
+## confirm that this verson doesn't have "frustrate"
+summary(nopriorfit.mod)
+plot(nopriorfit.mod)
+
+
+## grouping topics in descending order of prevalence:
+## with 46 as most prevalent, and 3 as least prevalent
+top10 <- c(46, 45, 28, 39, 31, 26, 34, 48, 13, 29)
+t11to20 <- c(7, 6, 14, 23, 30, 47, 24, 44, 35, 17)
+t21to30 <- c(1, 4, 12, 42, 22, 20, 16, 41, 5, 32)
+t31to40 <- c(36, 38, 11, 37, 2, 25, 19, 33, 43, 21)
+t41to50 <- c(8, 18, 50, 10, 27, 40, 15, 49, 9, 3)
+
+
+## 10 most common:
+png(file="tenmostcommon.png")
+par(bty="n",col="navyblue",lwd=5)
+plot.STM(nopriorfit.mod, 
+         topics=top10,
+         main="Top 10 Most Prevalent Topics")
+dev.off()
+
+## 11-20  most prevalent
+png(file="prevalence11to20mostcommon.png")
+par(bty="n",col="darkgreen",lwd=5)
+plot.STM(nopriorfit.mod, 
+         topics=t11to20,
+         main="11-20th Most Prevalent Topics")
+dev.off()
+
+png(file="prevalence21to30mostcommon.png")
+par(bty="n",col="firebrick",lwd=5)
+plot.STM(nopriorfit.mod, 
+         topics=t21to30,
+         main="21-30th Most Prevalent Topics")
+dev.off()
+
+
+png(file="prevalence31to40mostcommon.png")
+par(bty="n",col="darkslategray",lwd=5)
+plot.STM(nopriorfit.mod, 
+         topics=t31to40,
+         main="31-40th Most Prevalent Topics")
+dev.off()
+
+png(file="prevalence41to50mostcommon.png")
+par(bty="n",col="darkgoldenrod",lwd=5)
+plot.STM(nopriorfit.mod, 
+         topics=t41to50,
+         main="41-50th Most Prevalent Topics")
+dev.off()
+
+#####################
+### Print content of the topics:
+######################
+sink(file="detailedK50topicinfo.txt")
+sageLabels(nopriorfit.mod, n=7)
+sink()
+
+#### Estimate effect:
 
 npf.mod.ee <- estimateEffect(1:50~ trump*refbig5,
                              nopriorfit.mod ,
@@ -26,52 +97,64 @@ npf.mod.ee <- estimateEffect(1:50~ trump*refbig5,
                              uncertainty="Global")
 
 
-npf.mod.ee2 <- estimateEffect(1:50~ admin*refbig5,
-                              nopriorfit.mod2 ,
-                              meta=out$meta,
-                              uncertainty="Global")
-
-
-### getting names:                                                                                                                                           
-
+## Name topics
 nopriorfit.mod.labels <- labelTopics(nopriorfit.mod)
-adminmod.labels <- labelTopics(nopriorfit.mod2)
 
-adminmod.labels
-nopriorfit.mod.labels
+## label topics, broken into short chunks:
+labelTopics(nopriorfit.mod, ## country-covariates
+            topics=c(26))
+
 
 ## Summaries: 
 nopriorfit.mod.labels$covariate                                           
-adminmod.labels$covariate
 
+########
 ## Changes in topic prevalence
+#########
 
+## Overall effect of Trump Admin ==1
 
-## topic 26 and 28 very more common after trump                                                                                                            
-## also ...48?                                                                                                                                               
-## after                                                                                                                                                     
-## come back and clean up this plot, but                                                                                                                     
-## focus more on what those topics are                                                                                                                       
-## and how the difference is                                                                                                                                 
+## custom labels:
+shortlabels <- paste0("T", 1:50)
 
-
-
+pdf(file="postTrumpTopicPrevalence.pdf")
+par(bty="n",col="darkgoldenrod",lwd=.3, cex=.70)
 plot.estimateEffect(npf.mod.ee,
-                    covariate = "refbig5",
-                    topics=c(26, 28, 48),
+                    covariate= "trump",
+                    model=nopriorfit.mod,
+                    method="difference",
+                    cov.value1="1",
+                    cov.value2="0",
+                    label="custom",
+                    custom.labels=shortlabels,
+                    xlim=c(-0.08, 0.08),
+                    xlab="Less Prevalent After Trump Admin                                         More Prevalent")
+dev.off()
+
+### plot by just US, after Trump Admin
+## most common: 28, 48, 22
+
+pdf(file="prepostTrump-USParas.pdf")
+par(bty="n",col="chocolate",lwd=.3, cex=.7)
+plot.estimateEffect(npf.mod.ee,
+                    covariate = "trump",
                     model = nopriorfit.mod,
                     method = "difference",
-                    cov.value1="United States",
-                    cov.value2="other",
-                    labeltype="frex",
-                    verbose.labels = T,
-                    moderator = "trump",
-                    moderator.value = "0",
-                    linecol = "red")
+                    cov.value1="1",
+                    cov.value2="0", ## default
+                    ##verbose.labels = T,
+                    moderator = "refbig5",
+                    moderator.value = "United States",
+                    labeltype="custom",
+                    custom.labels=shortlabels,
+                    main="Prevalence of Topics in US-Referencing Paragraphs After Trump Administration",
+                    xlab="Less Prevalent                                  More Prevalent")
+dev.off()
 
 
+## function for plotting topics by country referred to:
 
-## function for plotting topics by country referred to:                                                                                                      
+sagelabs <- sageLabels(nopriorfit.mod)
 
 varyByRefs <- function(topic){
 
@@ -86,26 +169,43 @@ varyByRefs <- function(topic){
                       collapse="\n"),
                 paste(sagelabs$cov.betas[[6]]$frexlabels[topic,],
                       collapse="\n")),
-              width=40)
+              width=30,
+              main = paste0("Country-Specific Words for Topic ", topic))
     text(.5,6.5,"Canada", cex=1.1)
-    text(.5,5.0,"China", cex=1.1)
-    text(.5,4,"Egypt", cex=1.1)
-    text(.5,2.5,"India", cex=1.1)
-    text(.5,.75,"United States", cex=1.1)
+    text(.5,5.5,"China", cex=1.1)
+    text(.5,3.50,"Egypt", cex=1.1)
+    text(.5,2.50,"India", cex=1.1)
+    text(.5,1.,"United States",
+         cex=1.1, col="darkblue")
 
     dev.off()
 }
 
 
+## Print the country-level terms for the
+## topics that vary by US
+varyByRefs(22)
+varyByRefs(28)
+varyByRefs(48)
 
-varyByRefs(29)
 
+## Where the US moves very differently than the rest
+## pre/post Trump
+### 13, 26, 31, 39, 44
+
+varyByRefs(13)
+varyByRefs(26)
+varyByRefs(31) ## heights for country names: 2.5...0.5
+varyByRefs(39)
+
+varyByRefs(44) ## heights for country names: 6.5, 5.5...1
 #### Topics:                                                                                                                                                 
 
 ## Label topics is the object that will have the                                                                                                             
 ## country x post-trump characteristic words:                                                                                                                
 
-labeltopics <- labelTopics(nopriorfit.mod)
+labeltopics <- labelTopics(nopriorfit.mod,
+                           topics=top10)
 
 ## covariate variation by the variale (0/1 on Trum)                                                                                                          
 

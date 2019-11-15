@@ -1,6 +1,8 @@
 ## script to generate a co-occurence network
+
 ## of speaker-> referenced countries in paragraphs
- rm(list=ls())
+
+rm(list=ls())
 
 loadPkg=function(toLoad){
     for(lib in toLoad){
@@ -88,100 +90,7 @@ c2009 ## generates 4 groups
 
 
 ### Visualizations
-
-
-##1995
-pdf(file="1995Edges.pdf")
-plot(edges1995,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-
-dev.off()
-##1996
-
-pdf(file="1996Edges.pdf")
-plot(edges1996,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
- 
-##1997
-pdf(file="1997Edges.pdf")
-plot(edges1997,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-## 1998
-pdf(file="1998Edges.pdf")
-plot(edges1998,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-
-## 1999
-
-pdf(file="1999Edges.pdf")
-plot(edges1999,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-##2000
-
-pdf(file="2000Edges.pdf")
-plot(edges2000,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-
-## 2001
-
-pdf(file="2001dges.pdf")
-plot(edges2001,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-
-##2002
-
-pdf(file="2002Edges.pdf")
-plot(edges2002,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-##2003
-pdf(file="2003Edges.pdf")
-plot(edges2003,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-
-## 2004
-pdf(file="2004Edges.pdf")
-plot(edges2004,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-
-##2005
-
-pdf(file="2005Edges.pdf")
-plot(edges2005,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-
-##2006
+##Graph  vizualiations
 
 vizfunction <- function(graphobj, filename){
     colvec <- ifelse(V(graphobj)$delta >= 0,
@@ -212,111 +121,14 @@ vizfunction(edges2002,"2002HeirarchyGraph.pdf" )
 vizfunction(edges2008,"2008HeirarchyGraph.pdf" )
 vizfunction(edges2008,"2009HeirarchyGraph.pdf" )
 
-##2007
+## after trump:
 
-pdf(file="2007Edges.pdf")
-plot(edges2007,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-##2008
+vizfunction(edges2016, "2016HeirarchyGraph.pdf" )
+vizfunction(edges2017, "2017HeirarchyGraph.pdf" )
+vizfunction(edges2018, "2018HeirarchyGraph.pdf" )
 
-pdf(file="2008Edges.pdf")
-plot(edges2008,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-
-##2009
-
-pdf(file="2009Edges.pdf")
-plot(edges2009,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-##2010
-
-pdf(file="2010Edges.pdf")
-plot(edges2010,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-
-##2011
-pdf(file="2011Edges.pdf")
-plot(edges2011,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-
-
-
-##2012
-
-pdf(file="2012Edges.pdf")
-plot(edges2012,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-
-##2013
-pdf(file="2013Edges.pdf")
-plot(edges2013,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-##2014
-
-pdf(file="2014Edges.pdf")
-plot(edges2014,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-
-##2015
-pdf(file="2015Edges.pdf")
-plot(edges2015,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="lightgreen")
-dev.off()
-## 2016
-pdf(file="2016Edges.pdf")
-plot(edges2016,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="green")
-dev.off()
-
-
-pdf(file="2018Edges.pdf")
-plot(edges2018,
-     vertex.size=7,
-     edge.arrow.size=0.25,
-     vertex.color="pink")
-dev.off()
-
-
-## ## batch the graph
-
-## pdf(file=paste0(y,"Edges.pdf"))
-## plot(edges,
-##      vertex.size=7,
-##      edge.arrow.size=0.25,
-##      vertex.color="lightgreen")
-## dev.off()
 
 ##### communities:
-
-#vizfunction <- function(graphobj, filename){
 
 wc2005 <-walktrap.community(edges2005, steps=2)
 membership(wc2005)

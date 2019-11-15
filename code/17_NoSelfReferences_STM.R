@@ -5,6 +5,8 @@
 ## Trade Rep?
 ## (and new representative)
 
+## but removing the paragraphs where the "references"
+## are just to the speaker
 
 rm(list=ls())
 
@@ -16,18 +18,25 @@ library(stm)
 load("WTOParagraphDataForSTM.Rdata")
 colnames(paradata)
 
-
 ## Process the data:
 
 which(is.na(paradata)) ## no nas here
 
 colnames(paradata)
 
-texts <- "paratext"
-data <- paradata[, "paratext"]
-metadata <- paradata[,!colnames(paradata) %in% texts]
+## Remove the ~3k paragraphs that are just
+## references to the speaker:
 
-processed <- textProcessor(paradata$paratext,
+paradat <- subset(paradata, !(paradata$speaker == paradata$refs))
+dim(paradat)
+dim(paradata)
+
+
+texts <- "paratext"
+data <- paradat[, "paratext"]
+metadata <- paradat[,!colnames(paradat) %in% texts]
+
+processed <- textProcessor(paradat$paratext,
                            metadata = metadata,
                            customstopwords = c("frustrate",
                                "united", "states","canada",
@@ -40,13 +49,8 @@ out <- prepDocuments(processed$documents,
                      processed$meta,
                      lower.thresh=el*.001, ## word must be in at least 5% of docs
                      upper.thresh=el*.85) ## 11290 = 13283 * .85
-## upper.thresh removes words that appear in X number of documents
-## here x is set at 85%. 85% doesn't remove any additional words;
-## neither does 75% or 65%
 
-## 5% of doc threshold removes 8476 of 8664 terms; .001 removed 6327  terms.
-## often substantively interesting, but probably don't provide a lot of
-## Information
+### In this no-loop data, threashold= 10301 documents, 2337 terms
 
 
 removed <- out$words.removed
@@ -93,9 +97,9 @@ nopriorfit <- stm(documents=out$documents,
                    prevalence = ~ trump*refbig5)
 
 
-save(nopriorfit,
-     file="noprioronfitWTOSTM.Rdata")
-
+sink(file="no.loops.unsupervisedk.txt")
+summary(nopriorfit)
+sink() 
 ## Full model:
 
 
@@ -110,6 +114,9 @@ nopriorfit.mod <- stm(documents=out$documents,
                       content= ~ refbig5,
                       prevalence = ~ trump*refbig5)
 
+sink(file="no.loops.k50.txt")
+summary(nopriorfit.mod)
+sink()
 
 ## with administration as a factor
 ## rather than a dummy for Trump Admin
@@ -126,8 +133,13 @@ nopriorfit.adminmod <- stm(documents=out$documents,
                        prevalence = ~ admin*refbig5)
 
 
-save(nopriorfit.mod,
-     file="nopriorfit_mod.Rdata")
 
-save(nopriorfit.mod2,
-     file="nopriorfit_adminmod.Rdata")
+save(nopriorfit,
+     file="noloops-noprioronfitWTOSTM.Rdata")
+
+
+save(nopriorfit.nl.mod,
+     file="nl-nopriorfit_mod.Rdata")
+
+save(nopriorfit.adminmod,
+     file="nl-nopriorfit_adminmod.Rdata")
