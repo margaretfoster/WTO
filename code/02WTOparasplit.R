@@ -1,5 +1,10 @@
 #!/usr/bin/env Rscript
 
+## This code allows to run the script from the commandline
+## Takes two arguments:
+## [1] location of the input
+## [2] location for the ouput
+
 ## pass in datapath and output path
 args = commandArgs(trailingOnly=TRUE)
 
@@ -22,9 +27,11 @@ if (length(args)==0) {
 ## load libraries:prelimsetup.R
 source('prelimsetup.R')
 
-readPath <- "../../meetingnotes/txtextracts/"
+## take the passed-in directory locations:
+## Assumption is that the first
 
-outPath <- "../../paras/"
+readPath <- args[1]
+outPath <- args[2]
 
 
 list.files(readPath)
