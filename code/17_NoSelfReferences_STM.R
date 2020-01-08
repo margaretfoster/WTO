@@ -36,6 +36,9 @@ texts <- "paratext"
 data <- paradat[, "paratext"]
 metadata <- paradat[,!colnames(paradat) %in% texts]
 
+
+##write.csv(metadata,file="WTO_No_Self_References.csv")
+
 processed <- textProcessor(paradat$paratext,
                            metadata = metadata,
                            customstopwords = c("frustrate",
@@ -79,7 +82,22 @@ out$meta$admin <- as.factor(out$meta$admin)
 
 summary(out$meta$admin) ## no other, which is good
 
-                         
+
+## features of senders/recievers according to admin:
+
+colnames(out$meta)
+
+## Frequency of speakers by administration:
+
+
+
+
+
+### Topic Modeling:
+
+
+
+
 ## Because no priors,  start with the built-in
 ## STM spectral, K=0 and see what we get
 #### Search K b/c no prior on optimal number of
@@ -124,13 +142,30 @@ sink()
 names(out$meta$admin) <- levels(out$meta$admin)
 
 nopriorfit.adminmod <- stm(documents=out$documents,
-                       data=out$meta,
-                       vocab=out$vocab,
-                       seed=6889,
-                       K=50, 
-                       init.type="Spectral",
-                       content= ~ admin,
-                       prevalence = ~ admin*refbig5)
+                           data=out$meta,
+                           vocab=out$vocab,
+                           seed=6889,
+                           K=50, 
+                           init.type="Spectral",
+                           content= ~ admin, ## content varies by administration
+                           prevalence = ~ admin*refbig5) ## topic prevalence varies by country
+
+
+sink(file="adminmod-k50-noloops.txt")
+labelTopics(nopriorfit.adminmod)
+sink()
+
+## So, would want to do estimate effect, prevalence covariate = US;
+## content = before and after trump
+
+prep <- estimateEffect(formula=1:50~ admin*refbig5,
+                       nopriorfit.adminmod,
+                       out$meta,
+                       #documents=out$documents,
+                       uncertainty="Global")
+
+
+
 
 
 
