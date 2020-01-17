@@ -1,5 +1,9 @@
+#!/usr/bin/python
+
 ## script that takes a list of txt files
 ## and moves them into a csv
+## takes write path as input
+import sys
 import csv
 import os, glob
 
@@ -23,7 +27,9 @@ from glob import glob
 
 ## path on VCM:
 
-filelist = [os.path.abspath(f) for f in glob("/home/mjf34/WTO/paras/*.txt")]
+loc = sys.argv[1]
+
+filelist = [os.path.abspath(f) for f in glob(loc)] ## path to data
 
 ## laptop path:
 ##filelist = ["/Users/Promachos/Dropbox/WTO/data/paras/" +
