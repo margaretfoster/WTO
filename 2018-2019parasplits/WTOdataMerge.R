@@ -3,6 +3,7 @@
 ## read in data csvs
 ## merge according to meeting number and paragraph
 
+
 dat1 <- read.csv("wtoSecondStageDataParaNum.csv",
                  stringsAsFactors=FALSE)
 
@@ -12,44 +13,45 @@ dat2 <- read.csv("NERwithparanums.csv",
 
 colnames(dat2) <- c("row", "docid", "key", "entities")
 
-
-ls()
-
+##Make sure the same length:
 dim(dat1)
 dim(dat2)
 
-colnames(dat1)
-colnames(dat2)
 
-head(dat2$paraid)
-head(dat1$key)
-
-wto
-
-## Read in speakers:
-
-library(stringr)
+### take NER-identified entities in the paragraphs and:
+##If there is only one entity found, call that the “speaker”
+#If there is more than one entity:
+##Tag the first as the “speaker”
+##Tag the rest of the list as “references”
 
 
-tst <- head(dat2$entities)
+for(i in 1:dim(dat2)[1]){
+    #Find out how long the list of entities is:
+    tmp <- unlist(strsplit(dat2$entities[i], split=","))
+    ## if empty, keep "speaker" field empty:
+    if(length(tmp)==0){
+        dat2[i,"speaker"] <- " "
+    } else(if(length(tmp)==1){
+               dat2[i, "speaker"] <- tmp
+               ## if greater than 1, move first to speaker
+           }else{
+               dat2[i,"speaker"] <- tmp[1] #speaker is first
+               dat2[i, "refs"] <- paste(tmp[2:length(tmp)],
+                                       collapse= " ") #rest are refa
+           })}
 
-dat2$speaker <- word(dat2$entities, 1)
-
-head(dat2)
-
+## add text:
+dat2 <- merge(dat2, dat1, by="key")
 
 
+## check results:
+## discover that the NER doesn't retain order?
+salient <- c("speaker", "refs", "text")
 
-dat2[379,]$entities
-cbind(dat2$speaker, dat2$entities)
+dat2[10,salient]
+dat2[20, salient] ## order of the extraction is wrong
+dat2[43, salient] ## order of the extraction is wrong
+dat2[66, salient]
 
-## "united" => "United States"
-## El => El Salividor
-## Hong => Hong Kong
-## Costa=> Costa Rica
-## New => New Zealand
-## Sri -> Sri Lanka
+dat2[20, c(salient, "entities")]
 
-## Find the "South" and hand-correct those
-
-unique(dat2$speaker)
