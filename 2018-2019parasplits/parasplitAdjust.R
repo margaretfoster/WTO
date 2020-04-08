@@ -1,6 +1,11 @@
  
 ## script breaks the WTO full-text documents into paragraphs
 ## note though that it will also break "pararaphs" after a page break
+## The data specifically looks for the manually-inserted "&&" that
+## signals a paragraph break
+
+## I did this for the 2018-2019 data, because the original formatting has been
+## extremely difficult to put together a consistent rule to use to break the paragraphs
 
 rm(list=ls())
 
@@ -9,10 +14,12 @@ rm(list=ls())
 
 ## load libraries:prelimsetup.R
 source('../code/prelimsetup.R')
+args = commandArgs(trailingOnly=TRUE)
 
-## Pass in directory locations
-readPath1 <- "../2018-2019Data/"
-outPath1 <- "/splits/"
+
+## Pass in directory locations via the command line
+readPath1 <- args[1] ## data
+outFile <- args[2] ## output name
 
 
 files <- list.files(readPath1, pattern="^[WTCOMTDM]")
@@ -53,5 +60,6 @@ for(j in files){
 
 dim(allparas)
 
+print(colnames(allparas))
 write.csv(allparas,
-          file="wtoSecondStageDataParaNum.csv")
+          file=outFile)

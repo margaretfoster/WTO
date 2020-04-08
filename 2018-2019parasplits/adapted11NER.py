@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env/ python
 
 import sys
 import nltk
@@ -22,28 +22,50 @@ from nltk import word_tokenize, pos_tag, ne_chunk
 from nltk.tag import StanfordNERTagger
 from nltk.chunk import conlltags2tree, tree2conlltags
 
-#BASE = os.path.join(os.path.dirname(__file__), "..") ## 
-#DOCS = os.path.join(BASE, "data", "docs") ## 
-#CORPUS = os.path.join(BASE, "data", "corpus")
+
 if (len(sys.argv) < 3):
     print ("You need to specify an input file and an output file!")
     sys.exit(1)
     pass
     
 infile=sys.argv[1] ## this is a csv of the paragraph data
-outfile=sys.argv[2]
+outfile=sys.argv[2] ## filename to save to
 tempdir = tempfile.mkdtemp()
 
 
 def utf_8_encoder(unicode_csv_data):
     for line in unicode_csv_data:
         yield line.encode('utf-8')
-"""" 
-Pass in location of the data
-"""
-"""
-Extract paratext from WTOData.csv into .txt files for tagging
-"""
+
+## specify the list of entites to find:
+## Take the list of named countries in the word bank code corpus
+
+customnames = wb_codes.copy()
+customnames = customnames.keys()
+## Add non-country entities names:                                                                                                                                     
+toadd = ['Committee', 'Secretariat',
+         'Chairman', 'The Chairman', ## some of the "Chairman" entries not getting picked up?
+         'Chairperson', 'Members', 'European Union']
+
+## Organizations:
+## orgs invited 
+
+orgs= ['LDC Group',' United Nations', 'Arab Maghreb Union', 'UNECE', 
+       'Economic Community of Central African States', 'Economic Community of West African States',
+       'Economic Cooperation Organisation', 'Inter-Arab Investment Guarantee Corporation',
+       'Islamic Development Bank','African Union','Organisation of the Islamic Conference',
+       'South Centre, the Pacific Islands Forum', 'West African Economic and Monetary Union',
+       'World Intellectual Property Organization', 'League of Arab States','OPEC',
+       'Gulf Organization for Industrial Consulting','Organisation Internationale de la Francophonie',
+       'Common Fund for Commodities', 'OAPEC', 'Groupe de la Banque Africaine de Developpement']
+
+
+customnames.extend(toadd)
+customnames.extend(orgs)
+ 
+##Pass in location of the data
+##Extract paratext from input csv into .txt files for tagging
+
 def extract_corpus(): ## declare the function + required arguments
     with io.open(infile, mode='r', encoding = 'latin1') as csvfile: 
         reader = csv.DictReader(utf_8_encoder(csvfile))
@@ -57,10 +79,12 @@ def extract_corpus(): ## declare the function + required arguments
             with codecs.open(outpath, 'w') as f:
                 f.write(para)
 
+                
 """
 Extract entities using the NLTK named entity chunker. 
 Returns a dict mapping fileids to extracted PERSON, ORGANIZATION, GEOPOLITICAL, GEOGRAPHICAL 
-entities, collapsed into a single section and filtered to only include country names.
+entities, collapsed into a single section
+## filtered to only include the custom list of country names and speaker entities.
 """
 def nltk_entities(corpus):
     results = dict()
@@ -76,21 +100,20 @@ def nltk_entities(corpus):
             else:
                 continue
             if label == 'PERSON' or label == 'ORGANIZATION' or label == 'GPE' or label == 'GEO':
-                if etext in wb_codes.keys(): # Only append country names
-                    results[fileid].add(etext)
+                    ##results[fileid].add(etext) ## adds the text
+                    if etext in customnames : ## Keep this clause if you want it to keep only those entiites in the custom list
+                         results[fileid].add(etext) ## Adds the text
         results[fileid] = ', '.join(results[fileid])
         print(fileid + " " + results[fileid])
     return results
 
-
-
                 
 """
-Write clean NER to WTODataNew.csv
+Write clean NER to output csv
 """
 
 def write_csv(entities):
-    with io.open(infile, mode='r', encoding = 'latin1') as csvfile:
+    with io.open(infile, mode='r', encoding = 'utf-8') as csvfile:
         reader = csv.DictReader(utf_8_encoder(csvfile))
         data = []
         for row in reader:
@@ -102,17 +125,15 @@ def write_csv(entities):
             docid = row['doc']
             paratext = row['text']
             key = row['key'] ## paragraph number
-#            countryspeaker = row['country.speaker']
-#            date = row['date']
-#            numdate = row['numdate']
-            fileid=para+"_"+docid+".txt"
-            ents = entities[fileid]
+            fileid=para+"_"+docid + ".txt"
+            ents = entities[fileid].encode("ascii","ignore")
             print(ents)
-
-#            data.append((para, docid, parnum, paratext, countryspeaker, date, numdate, ents))
-            data.append([para, docid, key, ents])
+#           data.append((para, docid, parnum, paratext, countryspeaker, date, numdate, ents))
+            data.append([para, docid, key, paratext, ents])
+            fieldnames= ['para', 'docid', 'key', 'paratext', 'ents']
             with open(outfile, mode = 'w') as csv_file:
                 writer = csv.writer(csv_file)
+                writer.writerow([n for n in fieldnames])
                 for row in data:
                     writer.writerow(row)
         
