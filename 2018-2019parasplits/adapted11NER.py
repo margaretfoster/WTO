@@ -44,23 +44,38 @@ customnames = wb_codes.copy()
 customnames = customnames.keys()
 ## Add non-country entities names:                                                                                                                                     
 toadd = ['Committee', 'Secretariat',
-         'Chairman', 'The Chairman', ## some of the "Chairman" entries not getting picked up?
-         'Chairperson', 'Members', 'European Union']
+         'Chairman', 'Chairperson',
+         'Members', 'European Union',
+         'Member', "Chairman "]
 
+otherstates= ['African Group', 'Russian Federation',
+                'Chinese Taipei']
 ## Organizations:
 ## orgs invited 
 
-orgs= ['LDC Group',' United Nations', 'Arab Maghreb Union', 'UNECE', 
-       'Economic Community of Central African States', 'Economic Community of West African States',
-       'Economic Cooperation Organisation', 'Inter-Arab Investment Guarantee Corporation',
-       'Islamic Development Bank','African Union','Organisation of the Islamic Conference',
-       'South Centre, the Pacific Islands Forum', 'West African Economic and Monetary Union',
-       'World Intellectual Property Organization', 'League of Arab States','OPEC',
-       'Gulf Organization for Industrial Consulting','Organisation Internationale de la Francophonie',
-       'Common Fund for Commodities', 'OAPEC', 'Groupe de la Banque Africaine de Developpement']
+orgs= ['LDC Group','United Nations', 'ITTC',
+       'ASEAN', 'Development Division',
+       'African Union','Arab Maghreb Union',
+       'UNECE', 'Economic Community of Central African States',
+       'Economic Community of West African States',
+       'Economic Cooperation Organisation',
+       'Inter-Arab Investment Guarantee Corporation',
+       'Islamic Development Bank',
+       'Organisation of the Islamic Conference',
+       'South Centre','the Pacific Islands Forum',
+       'West African Economic and Monetary Union',
+       'World Intellectual Property Organization',
+       'League of Arab States','OPEC', "ITC",
+       'Gulf Organization for Industrial Consulting',
+       'Organisation Internationale de la Francophonie',
+       'Common Fund for Commodities', 'OAPEC',
+       'Groupe de la Banque Africaine de Developpement']
 
 
 customnames.extend(toadd)
+customnames.extend(otherstates)
+
+print(customnames)
 customnames.extend(orgs)
  
 ##Pass in location of the data
