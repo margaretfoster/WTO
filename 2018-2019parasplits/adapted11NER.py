@@ -35,7 +35,7 @@ tempdir = tempfile.mkdtemp()
 
 def utf_8_encoder(unicode_csv_data):
     for line in unicode_csv_data:
-        yield line.encode('utf-8')
+        yield line.encode('utf-8') 
 
 ## specify the list of entites to find:
 ## Take the list of named countries in the word bank code corpus
