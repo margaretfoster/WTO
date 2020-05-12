@@ -82,7 +82,7 @@ customnames.extend(orgs)
 ##Extract paratext from input csv into .txt files for tagging
 
 def extract_corpus(): ## declare the function + required arguments
-    with io.open(infile, mode='r', encoding = 'latin1') as csvfile: 
+    with io.open(infile, mode='r', encoding = 'utf-8') as csvfile: 
         reader = csv.DictReader(utf_8_encoder(csvfile))
 
         for row in reader:
