@@ -1,5 +1,7 @@
 #!/usr/bin/env R
 
+rm(list=ls())
+
 library(tidyverse)
 
 ## This script takes the output of adaptedNER
@@ -20,9 +22,11 @@ args = commandArgs(trailingOnly=TRUE)
 outfile <- args[2] ## name of file for ouput
 
 ## Read in data:
-docs = read.csv(args[1], ## documents with NER identified
-                header=TRUE,
-                stringsAsFactors=FALSE)
+##docs = read.csv(args[1], ## documents with NER identified
+##                header=TRUE,
+##                stringsAsFactors=FALSE)
+
+docs <- read.csv("02wtoNER.csv")
 
 ## verify type:
 docs$paratext <- as.character(docs$paratext)
@@ -48,7 +52,6 @@ overlooked <- c("Chairman", "Secretariat")
 ## (3)find position in "paratext"
 ## take the minimum
 ## write that as "speaker"
-
 
 ## Add the missing Chairman and Secretariat lists:
 
@@ -82,10 +85,11 @@ for (r in rows){
 } ## close "rows" for-loop
 
 
+
 ## Now ID the first:
 for (r in rows){
 
-    ##    print(r)
+    print(r)
     ents <- trimws(stringr::str_split(docs[r,"ents"],
                                       pattern= ",",
                                       simplify=TRUE))
@@ -102,10 +106,11 @@ for (r in rows){
     ## and identity their places in the
     ## paragraph text:
     for (e in 1:length(ents)){
-        
+        tmp <- paste0("\\b", ents[e], "\\b") ## \b is word boundary
+       ## print(tmp)
         locs <- stringr::str_locate(
             string=docs[r, "paratext"],
-            pattern=ents[e])
+            pattern=tmp)
         storage["start", e] <- locs[1]
         storage["end", e] <- locs[2]
     }

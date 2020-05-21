@@ -1,5 +1,4 @@
 #!/usr/bin/env/ python
-
 import sys
 import nltk
 import json
@@ -22,38 +21,49 @@ from nltk import word_tokenize, pos_tag, ne_chunk
 from nltk.tag import StanfordNERTagger
 from nltk.chunk import conlltags2tree, tree2conlltags
 
+## Error if not enough input 
 
 if (len(sys.argv) < 3):
     print ("You need to specify an input file and an output file!")
     sys.exit(1)
     pass
-    
+
+## Read in data:
 infile=sys.argv[1] ## this is a csv of the paragraph data
 outfile=sys.argv[2] ## filename to save to
 tempdir = tempfile.mkdtemp()
 
+## custom UTF-8 encoder to reference later:
 
 def utf_8_encoder(unicode_csv_data):
     for line in unicode_csv_data:
-        yield line.encode('utf-8') 
+        yield line.encode('utf-8', errors="backslashreplace") 
 
-## specify the list of entites to find:
+## Pre-populate with entities:
 ## Take the list of named countries in the word bank code corpus
 
 customnames = wb_codes.copy()
 customnames = customnames.keys()
+
 ## Add non-country entities names:                                                                                                                                     
 toadd = ['Committee', 'Secretariat',
          'Chairman', 'Chairperson',
          'Members', 'European Union',
-         'Member', "Chairman "]
+         'European Communities', 'EC', 'EU',
+         'Member', 'Chairman ',  #intentional extra space, for some formatting corner case issues
+         'chairman', 'Ambassador', 'Director-General',
+         'Head', 'Deputy Director', 'Director']
 
 otherstates= ['African Group', 'Russian Federation',
-                'Chinese Taipei']
+                'Chinese Taipei', 'Uganda',
+              'Saudi Arabia', 'El Salvador']
 ## Organizations:
 ## orgs invited 
 
-orgs= ['LDC Group','United Nations', 'ITTC',
+orgs= ['LDC Group', 'LDCs',
+       'United Nations', "UN",
+       'ITTC', 'JAG', 'ICCO' , 'WTO', 'UNCTAD',
+       'GCC', 'CRTA', 'CTD', 'TN', 'RTA', 'TCAU',
        'ASEAN', 'Development Division',
        'African Union','Arab Maghreb Union',
        'UNECE', 'Economic Community of Central African States',
@@ -72,17 +82,19 @@ orgs= ['LDC Group','United Nations', 'ITTC',
        'Groupe de la Banque Africaine de Developpement']
 
 
+## Group together:
+
 customnames.extend(toadd)
 customnames.extend(otherstates)
-
-print(customnames)
 customnames.extend(orgs)
  
+
 ##Pass in location of the data
 ##Extract paratext from input csv into .txt files for tagging
 
 def extract_corpus(): ## declare the function + required arguments
-    with io.open(infile, mode='r', encoding = 'utf-8') as csvfile: 
+    with io.open(infile, mode='r', encoding = 'ascii', errors="replace") as csvfile:  ## backsplash replace to convert target that can't be read
+        
         reader = csv.DictReader(utf_8_encoder(csvfile))
 
         for row in reader:
@@ -128,7 +140,7 @@ Write clean NER to output csv
 """
 
 def write_csv(entities):
-    with io.open(infile, mode='r', encoding = 'utf-8') as csvfile:
+    with io.open(infile, mode='r', encoding = 'ascii', errors="replace") as csvfile:
         reader = csv.DictReader(utf_8_encoder(csvfile))
         data = []
         for row in reader:
@@ -141,7 +153,7 @@ def write_csv(entities):
             paratext = row['text']
             key = row['key'] ## paragraph number
             fileid=para+"_"+docid + ".txt"
-            ents = entities[fileid].encode("ascii","ignore")
+            ents = entities[fileid].encode("utf-8", errors="backslashreplace")
             print(ents)
 #           data.append((para, docid, parnum, paratext, countryspeaker, date, numdate, ents))
             data.append([para, docid, key, paratext, ents])

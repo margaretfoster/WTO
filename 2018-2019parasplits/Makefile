@@ -19,6 +19,10 @@ wtodata : 01wtoparas.csv 02wtoNER.csv 03withfirstentity.csv
 	Rscript --vanilla findfirstspeaker.R 02wtoNER.csv 03withfirstentity.csv
 
 
+WTO_TD_NER_Data.csv : 03withfirstentity.csv
+	Rscript --vanilla 04dateMetaData.R 03withfirstentity.csv WTO_TD_NER_Data.csv
+
+
 .PHONY : clean
 clean :
-	rm -f 01wtoparas.csv 02wtoNER.csv
+	rm -f 01wtoparas.csv 02wtoNER.csv 03withfirstentity.csv
