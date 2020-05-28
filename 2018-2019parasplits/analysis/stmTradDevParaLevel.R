@@ -22,36 +22,46 @@ loadPkg(packs2)
 dataPath <- "../"
 savePath <- "./"
 
-##data <- read.csv(paste0(dataPath, "paragraphsAndMeta.csv"))
 
-ls()
+data <- read.csv(paste0(dataPath,
+                        "WTO_TD_NER_Data.csv"),
+                        stringsAsFactors=FALSE)
 
 colnames(data)
 
-head(data)
+data$X <- NULL
+data$date <- as.Date(data$date)
 
-## pargraph text=data$V@
+class(data$date)
+hist(data$date,breaks="months")
 
+## pargraph text=data$paratext
+
+## metadata colunmns: paranum, date, firstent
 
 ##### Analysis
 
-processed <- textProcessor(documents=data$V2,
+processed <- textProcessor(documents=data$paratext,
                            metadata=data)
 
-summary(processed) ## 82 docs 5781 word dictionary
+summary(processed) ## 5781 documents, 7249 word dictionary
 
 
 out <- prepDocuments(processed$documents,
                      processed$vocab,
                      processed$meta)
 
+## 5781 documents, 4605 terms
+
+
 ##make date into a numeric:
 
+class(out$meta$date)## factor
 
 out$meta$numdate <- as.numeric(out$meta$date)
 
-
-head(out$meta)
+head(out$meta$numdate)
+head(out$meta$date)
 
 ##82 docs, 3614 terms, 56784 tokens
 
@@ -59,29 +69,31 @@ docs <- out$documents
 vocab <- out$vocab
 meta <- out$meta
 
+colnames(meta)
+
+head(meta$doc)
+head(meta$docid)
+
 set.seed(6889)
+
 
 mod.out <- stm(documents=docs,
                vocab=vocab,
                data=meta,
-               K=20,
-               prevalence=~s(numdate)+ docid,
+               K=100, ## start at 100 to get a fine-grained
+               ## overview over time
+               prevalence= ~ s(numdate) +
+                   as.factor(docid)+
+                   as.factor(firstent),
                seed=6889)
 
  
-save(mod.out,
-     file=paste0(savePath, "tradDevParaLev20.RData"))
 
-prep <- estimateEffect(c(1:10)~s(numdate) + docid,
+prep <- estimateEffect(c(1:100)~ s(numdate) +
+                           as.factor(docid)+
+                           as.factor(firstent),
                        mod.out,
                        metadata=meta, documents=docs,
                        uncertainty=c("Global"))
 
-save(prep,
-     file=paste0(savePath, "estimateEffectParaLevTD20.Rdata"))
-
-##save(meta,docs, vocab,
-##     file=paste0(savePath, "tradeDevMetaParaLev.Rdata"))
-
-
-### select model:
+save.image(file=paste0(savePath, "tradDevParaLev100.RData"))

@@ -25,7 +25,6 @@ data$docid <- gsub(pattern=".txt",
                    x=data$docid)
 
 ## Add dates:
-
 meetingdates <- read.csv(paste0("../data/",
                         "TDMeetingDates.csv"),
                  header=TRUE,

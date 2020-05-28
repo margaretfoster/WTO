@@ -23,7 +23,8 @@ outFile <- args[2] ## output name
 
 
 
-files <- list.files(readPath1, pattern="^[WTCOMTDM]")
+files <- list.files(readPath1, pattern="^[WTCOMTDM]",
+                    ignore.case=TRUE)
 
 length(files) ## 69 only?
 

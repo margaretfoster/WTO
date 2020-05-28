@@ -54,8 +54,9 @@ toadd = ['Committee', 'Secretariat',
          'chairman', 'Ambassador', 'Director-General',
          'Head', 'Deputy Director', 'Director']
 
-otherstates= ['African Group', 'Russian Federation',
-                'Chinese Taipei', 'Uganda',
+otherstates= ['African Group', 'African group' ,
+              'Russian Federation',
+              'Chinese Taipei', 'Uganda',
               'Saudi Arabia', 'El Salvador']
 ## Organizations:
 ## orgs invited 

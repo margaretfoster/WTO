@@ -26,11 +26,26 @@ outfile <- args[2] ## name of file for ouput
 ##                header=TRUE,
 ##                stringsAsFactors=FALSE)
 
-docs <- read.csv("02wtoNER.csv")
+docs <- read.csv(args[1])
 
-## verify type:
+
 docs$paratext <- as.character(docs$paratext)
 docs$ents <- as.character(docs$ents)
+
+## clean up the "\n" literals:
+docs$paratext <- gsub(docs$paratext,
+     pattern="\n",
+     replacement=" ")
+
+##Some ugly corner case correction:
+## "Secretariats" (row 1085) seems to be the only place where
+## a plural is messing this up:
+## other soultions have been more ugly
+
+docs$paratext <- gsub(docs$paratext,
+     pattern="Secretariats", ## really for row 1085
+     replacement="Secretariat")
+ 
 
 ## Add a place for the new data to live:
 
@@ -41,10 +56,12 @@ rows <- 1:dim(docs)[1] ## number of rows
 
 ## "Overloooked" entities:
 ## (For some reason, NLTK missed a lot of
-## entries for "Chairman" and "Secretariat")
+## entries for "Chairman", "Secretariat", and "Uganda")
 ## Even though they were in the entities dictionary
 
-overlooked <- c("Chairman", "Secretariat")
+
+overlooked <- c("Chairman", "Secretariat",
+                "Uganda")
 
 
 ## (1) for each entry in "ents
@@ -63,8 +80,9 @@ for (r in rows){
         ## see if the text has one of the missing values
         intext <- stringr::str_detect(
                                 string=docs[r, "paratext"],
-                                pattern = o)
-
+                               pattern = paste0("\\b",
+                                                o, "\\b"))
+                               ## \\b for word boundary
         ## and if the value is in the nltk list of entities:
         inents <- stringr::str_detect(
                                string=docs[r, "ents"],
@@ -85,10 +103,8 @@ for (r in rows){
 } ## close "rows" for-loop
 
 
-
 ## Now ID the first:
 for (r in rows){
-
     print(r)
     ents <- trimws(stringr::str_split(docs[r,"ents"],
                                       pattern= ",",
@@ -98,7 +114,7 @@ for (r in rows){
     ## entities and their position in the text
     storage <- data.frame(matrix(NA, nrow=2,
                                  ncol=length(ents)),
-                      row.names=c("start", "end"))
+                          row.names=c("start", "end"))
     
     colnames(storage) <- as.vector(ents)
     
@@ -106,29 +122,26 @@ for (r in rows){
     ## and identity their places in the
     ## paragraph text:
     for (e in 1:length(ents)){
-        tmp <- paste0("\\b", ents[e], "\\b") ## \b is word boundary
-       ## print(tmp)
+        tmp <- paste0("\\b", ents[e], "\\b") ## \\b are word boundaries
+        ##print(tmp)
         locs <- stringr::str_locate(
             string=docs[r, "paratext"],
             pattern=tmp)
         storage["start", e] <- locs[1]
         storage["end", e] <- locs[2]
     }
-
-    ## Identify the minium of the
-    ## numbers
-    minnum <- min(storage["start",])
     
+    ## Identify the minium of the
+    ## numbers.
+    minnum <- min(storage["start",])
+   
     ## Find the column name
     ## where the minimum lives:
-
     id <- names(storage)[storage[1,] == minnum]
-
     ## Feed that back into the data:
-    
-    docs[r,]$firstent <- id
-
+    docs[r,]$firstent <- id    
 }
+
 
 write.csv(docs,
           file=outfile)
