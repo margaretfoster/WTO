@@ -52,7 +52,8 @@ toadd = ['Committee', 'Secretariat',
          'European Communities', 'EC', 'EU',
          'Member', 'Chairman ',  #intentional extra space, for some formatting corner case issues
          'chairman', 'Ambassador', 'Director-General',
-         'Head', 'Deputy Director', 'Director']
+         'Head', 'Deputy Director', 'Director',
+         'Legal Affairs Division']
 
 otherstates= ['African Group', 'African group' ,
               'Russian Federation',
@@ -61,8 +62,8 @@ otherstates= ['African Group', 'African group' ,
 ## Organizations:
 ## orgs invited 
 
-orgs= ['LDC Group', 'LDCs',
-       'United Nations', "UN",
+orgs= ['LDC Group', 'LDCs', 'LAIA',
+       'United Nations', 'UN',
        'ITTC', 'JAG', 'ICCO' , 'WTO', 'UNCTAD',
        'GCC', 'CRTA', 'CTD', 'TN', 'RTA', 'TCAU',
        'ASEAN', 'Development Division',

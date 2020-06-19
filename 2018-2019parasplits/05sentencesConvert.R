@@ -14,8 +14,13 @@ args = commandArgs(trailingOnly=TRUE)
 infile <- args[1] ## input data
 outfile <- args[2] ## name of file for ouput
 
+
 data <- read.csv(infile,
                  stringsAsFactors=FALSE)
+
+
+dim(data) ##8544 x 9
+
 
 wto.sentences <- get_sentences(data)
 dim(wto.sentences) ##58029 x10
@@ -26,11 +31,8 @@ colnames(wto.sentences)[which(colnames(wto.sentences)=="firstent")] <- "speaker"
 colnames(wto.sentences)[which(colnames(wto.sentences)=="paratext")] <- "sentence"
 colnames(wto.sentences)
 
-## TO DO AFTER WALK:
 ## for each entity in the ents column, search for the ent
 ## in the corresponding sentence (parse the references to only the sentences that contain the other state)
-
-
 
 wto.sentences$inline <- "none"
 
