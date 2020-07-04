@@ -11,7 +11,7 @@ loadPkg=function(toLoad){
 
 
 packs <- c('tm', 'stm', 'pdftools',
-           'tidyr', 'quanteda')
+           'tidyr', 'quanteda', "wbstats")
 
 packs2 <- c("stringr", "reshape2",
             "dplyr", "ggplot2",  "magrittr")
@@ -34,11 +34,38 @@ data$date <- as.Date(data$date)
 
 class(data$date)
 hist(data$date,breaks="months")
-
 summary(data$date) ## 4/4/1995- 6/28/2019
 
-colnames(data)
+##want to add a column for year:
+data$year <- format(data$date, "%Y")
 
+colnames(data)
+dim(data) ## 8636
+
+## Remove data for "meeting" 28A1, which is an appendix with a
+## program of a 2000 seminar on differential treatment of economies
+
+data <- data[!data$docid=="WTCOMTDM28A1",]
+
+dim(data) ##8636x10
+
+## Consolidate the "EU" and "EC" entries with
+## European Union and European Communities respectively
+## same with UN and United Nations
+data[which(data$firstent=="EU"), "firstent"] <- "European Union"
+data[which(data$firstent=="EC"), "firstent"] <- "European Communities"
+data[which(data$firstent=="UN"), "firstent"] <- "United Nations"
+
+#### Summarize frequency and variety of speakers
+
+data$meetingno <- data$docid
+data$meetingno <- as.numeric(gsub(data$meetingno,
+                       pattern="WTCOMTDM",
+                       replace=""))
+
+load("speakersMeta.Rdata")## dataframe with state income and region information
+#####################
+###
 #### process the data into stm format:
 
 ## pargraph text: data$paratext
