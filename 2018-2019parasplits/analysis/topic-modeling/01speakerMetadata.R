@@ -24,7 +24,7 @@ savePath <- "./"
 
 
 data <- read.csv(paste0(dataPath,
-                        "WTO_TD_NER_Data.csv"),
+                        "WTO_TD_NER_Data_July_2020.csv"),
                         stringsAsFactors=FALSE)
 
 colnames(data)
@@ -55,6 +55,9 @@ dim(data) ##8636x10
 data[which(data$firstent=="EU"), "firstent"] <- "European Union"
 data[which(data$firstent=="EC"), "firstent"] <- "European Communities"
 data[which(data$firstent=="UN"), "firstent"] <- "United Nations"
+data[which(data$firstent=="Japan, China"), "firstent"] <- "Japan"
+data[which(data$firstent=="Chinese Taipei"), "firstent"] <- "Taiwan"
+data[which(data$firstent=="Dr. Cosgrove-Sacks"), "firstent"] <- "UNECE"
 
 #### Summarize frequency and variety of speakers
 
@@ -64,62 +67,12 @@ data$meetingno <- as.numeric(gsub(data$meetingno,
                        replace=""))
 
 
-## subset to just work with the meeting number and
-## speaker data:
-
-cols <- c("meetingno", "date",
-          "firstent", "paranum", "year")
-
-speakers <- data[, cols]
+speakers <- data
 
 dim(speakers)## 8636
-
 head(speakers)
 
-## Want to have a dataframe summarizing the number of speakers in a given
-## meeting.
-
-##start with just one meeting:
-
-tmp10 <- speakers[which(speakers$meetingno==10),]
-
-dim(tmp10) 3 ##25x4
-
-colnames(speakers)
-
-
-summary(speaker$meetingno) ##1-109
-
-### first dataframe: summary of number of spekaers per meeting:
-
-unique.speakers <- data.frame()
-for(m in 1:109){
-    unique.speakers[m, "meeting"] <- m
-    unique.speakers[m, "num.speakers"]  <- length(unique(
-        speakers[which(speakers$meetingno==m),"firstent"]))    
-    unique.speakers[m, "approxparas"] <- max(speakers[which(speakers$meetingno==10),"paranum"])
-}
-
-head(unique.speakers)
-
-## add-year:
-unique.speakers <- merge(x=unique.speakers,
-                        y=unique(speakers[,c("meetingno","year")]),
-                        by.x="meeting",
-                        by.y="meetingno",
-                        all.x=TRUE)
-
-
-dim(unique.speakers) ## 109x4
-
-## basic plot:
-
-s1 <- ggplot(unique.speakers, aes(x=year, y=num.speakers))
-
-plot(unique.speakers$num.speakers~unique.speakers$year)
-
-## Take all speakers data, add World Bank income statistics
-
+### Bring in World Bank data for countries:
 library(wbstats)
 
 str(wb_cachelist, max.level = 1)## what variables are there?
@@ -180,7 +133,8 @@ key.df[which(key.df$Var1=="Chinese Taipei"), "iso3c"] <- "TWN"
 key.df[which(key.df$Var1=="Trinidad"), "iso3c"] <- "TTO"
 key.df[which(key.df$Var1=="Venezuela"), "iso3c"] <- "VEN"
 key.df[which(key.df$Var1=="Korea"), "iso3c"] <- "KOR"
-
+key.df[which(key.df$Var1=="Cote-d-Ivoire"), "iso3c"] <- "CIV"
+key.df[which(key.df$Var1=="Egypt"), "iso3c"] <- "EGY"
 ## Now that I have the iso3 codes for the countires in my data
 ## merge in the rest of the meta.inc information into key.df
 
@@ -217,7 +171,6 @@ key.df[which(key.df$iso3c=="ADMN"),c("region",
 
 key.df[which(key.df$country=="European Union"), "incomeID"] <- "AGG"
 
-
 ####### Merge into speakers dataset:
 
 speakers.meta <- merge(x=speakers,
@@ -230,13 +183,72 @@ dim(speakers)
 dim(speakers.meta) ## 8636x 9, did work, just has a problem with the
 ## entries with no identified spekers
 
-head(speakers.meta)
-speakers.meta[7266:7270,]
 
-### plot of speakers by year, colored by income level
-              
+#########
+## Clean up
+###########
+                                        
+dim(speakers.meta) ## 8636, so need to find the 7 that don't have anything
+
+speakers.meta$incomeID <- as.factor(speakers.meta$incomeID)
+
+## There seems to be 7 rows that have document IDs and paragraph numbers,
+## but no text, or speakers. Will drop those:
+
+speakers.meta <- speakers.meta[!is.na(speakers.meta$incomeID==TRUE),]
+
+## Conlidate some technically distinct, but theoretically linked
+## unique speakers:
+
+## Consolidate European Union, European Communities, European Commission
+## not technically the same, of course, but.. similar actor:
+speakers.meta$firstent <- as.character(speakers.meta$firstent)
+
+## "European Commission"  "European Communities" "European Union
+## choosing European Communities as the base because it is the most common
+speakers.meta[which(speakers.meta$firstent=="European Commission"),
+              "firstent"] <- "European Communities"
+
+speakers.meta[which(speakers.meta$firstent=="European Union"),
+                       "firstent"] <- "European Communities"
+
+### Now consolidate Chairperson into Chairman:
+
+speakers.meta[which(speakers.meta$firstent=="Chairperson"),
+              "firstent"] <- "Chairman"
+
+############################################
+### Fill in some holes in the data:
+###########################################
+
+#### Find the missing date or document id:
+
+which(is.na(speakers.meta$date))## 604
+
+## paragraph in meeting 76 from Burkina Faso:
+## add date for meeting 76
+
+speakers.meta[604, "date"] <- "2009-10-12"
+speakers.meta[604, "year"] <- 2009
 
 
-## Write out the dataframe)
+### Add a "country" name for Admin roles so that we don't get
+## lots of NAs:
+
+## Add the admin roles:
+
+speakers.meta[which(speakers.meta$iso3c=="ADMN"),
+              "country"] <- "Administration"
+
+
+## Add non-state speaker roles
+speakers.meta[which(speakers.meta$iso3c=="NOTST"),
+              "country"] <- "Nonstate Rep"
+
+
+########################
+### Save metadata:
+#######################
+
 save(speakers.meta,
      file="speakersMeta.Rdata")
