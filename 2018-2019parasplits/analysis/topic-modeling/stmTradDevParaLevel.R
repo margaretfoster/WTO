@@ -20,6 +20,9 @@ packs2 <- c("stringr", "reshape2",
 loadPkg(packs)
 loadPkg(packs2)
 
+dataPathDesktop <- "~/Dropbox/WTO/"
+
+
 dataPath <- "../../"
 savePath <- "./"
 
@@ -33,6 +36,7 @@ colnames(speakers.meta)
 
 dim(speakers.meta)
 
+## Verify no missing data in the columns we'll use:
 sum(is.na(speakers.meta$docid))
 sum(is.na(speakers.meta$country))
 sum(is.na(speakers.meta$date))
@@ -45,18 +49,16 @@ sum(is.na(speakers.meta$firstent))
 
 speakers.meta$firstent <- as.factor(speakers.meta$firstent)
 
-length(unique(speakers.meta$firstent)) ##now 167
+length(unique(speakers.meta$firstent)) #197
 
 ### Summary statistics:
 speaker.freq <- as.data.frame((table(speakers.meta$firstent)))
-
 speaker.freq <- speaker.freq[order(speaker.freq$Freq),]
-
 head(speaker.freq)
 
 ## 10 most frequent speakers:
 
-speaker.freq[157:167,]
+speaker.freq[187:197,]
 
 ## Chairman/person; Committee
 ## Then: US,EU/EC, India, Egypt,  Canada, Seretariat,

@@ -19,126 +19,165 @@ packs2 <- c("stringr", "reshape2",
 loadPkg(packs)
 loadPkg(packs2)
 
-dataPath <- "../../"
+dataPathDesktop <- "~/Dropbox/WTO/"
 savePath <- "./"
 
 
-data <- read.csv(paste0(dataPath,
+data <- read.csv(paste0(dataPathDesktop,
                         "WTO_TD_NER_Data_July_2020.csv"),
                         stringsAsFactors=FALSE)
 
 colnames(data)
 
-data$X <- NULL
-data$date <- as.Date(data$date)
+##########################
+##Check for gaps in data
+##########################
 
-class(data$date)
-hist(data$date,breaks="months")
-summary(data$date) ## 4/4/1995- 6/28/2019
+dim(data)
+which(is.na(data)) ##61435 61459 61641 61857 63907 65455 67578
 
-##want to add a column for year:
-data$year <- format(data$date, "%Y")
+nadat <- data[rowSums(is.na(data))>0, ] 
 
-colnames(data)
-dim(data) ## 8636
+nadat ## 7 rows with meeting numbers, but no text or speakers
+data <- data[rowSums(is.na(data))==0,] ## excise
 
-## Remove data for "meeting" 28A1, which is an appendix with a
-## program of a 2000 seminar on differential treatment of economies
+dim(data)
 
-data <- data[!data$docid=="WTCOMTDM28A1",]
 
-dim(data) ##8636x10
+table(data$docid) ## count an spread
+length(unique(data$docid)) ##109 meetings
 
-## Consolidate the "EU" and "EC" entries with
-## European Union and European Communities respectively
-## same with UN and United Nations
-data[which(data$firstent=="EU"), "firstent"] <- "European Union"
-data[which(data$firstent=="EC"), "firstent"] <- "European Communities"
-data[which(data$firstent=="UN"), "firstent"] <- "United Nations"
-data[which(data$firstent=="Japan, China"), "firstent"] <- "Japan"
-data[which(data$firstent=="Chinese Taipei"), "firstent"] <- "Taiwan"
-data[which(data$firstent=="Dr. Cosgrove-Sacks"), "firstent"] <- "UNECE"
+########################
+### Come back to: reindex paragraph numbers
+########################
 
-#### Summarize frequency and variety of speakers
+salient <- c("docid", "paranum", "X")
+data <- dplyr::arrange(data, paranum, group_by="docid")
 
 data$meetingno <- data$docid
 data$meetingno <- as.numeric(gsub(data$meetingno,
                        pattern="WTCOMTDM",
                        replace=""))
 
+########################
 
-speakers <- data
+############################
+## Make date column a "date" class
+############################
 
-dim(speakers)## 8636
-head(speakers)
+data$date <- as.Date(data$date) ## format date
+data$year <- format(data$date, "%Y") ## add year
 
+summary(data$date) ## 4/4/1995- 6/28/2019
+
+
+####################################
+### Manual DeDuplification 
+####################################
+
+## Remove stray whitespace:
+data$firstent <- trimws(data$firstent)
+
+## Countries
+data[which(data$firstent=="Chairperson"), "firstent"] <- "Chairman"
+data[which(data$firstent=="EU"), "firstent"] <- "European Union"
+data[which(data$firstent=="EC"), "firstent"] <- "European Communities"
+data[which(data$firstent=="UN"), "firstent"] <- "United Nations"
+data[which(data$firstent=="Japan, China"), "firstent"] <- "Japan"
+data[which(data$firstent=="Chinese Taipei"), "firstent"] <- "Taiwan"
+data[which(data$firstent=="Saint Lucia"), "firstent"] <- "St. Lucia"
+data[which(data$firstent=="Trinidad"), "firstent"] <- "Trinidad and Tobago"
+data[which(data$firstent=="Republic of Korea"), "firstent"] <- "Korea"
+## People
+data[which(data$firstent=="Dr. Cosgrove-Sacks"), "firstent"] <- "UNECE"
+data[which(data$firstent=="El Kabbaj"), "firstent"] <- "IMF/World Bank Development Committee"
+data[which(data$firstent=="Lanvin"), "firstent"] <- "UNCTAD"
+data[which(data$firstent=="Rossier"), "firstent"] <- "UNCTAD"
+data[which(data$firstent=="Deputy Director General"), "firstent"] <- "Deputy Director-General"
+data[which(data$firstent=="Ambassador Diallo"), "firstent"] <- "Chairman-Elect"
+data[which(data$firstent=="Ambassador Senadhira"), "firstent"] <- "Chairman-Elect"
+##Offices and Orgs
+data[which(data$firstent=="Sub-committee"), "firstent"] <- "Sub-Committee"
+data[which(data$firstent=="UNCTAD Secretariat"), "firstent"] <- "UNCTAD"
+data[which(data$firstent=="Technical Cooperation Division"), "firstent"] <- "Technical Cooperation and Training Division"
+data[which(data$firstent=="Office for Least-Developed Countries and Africa"), "firstent"] <- "Office for LDCs"
+data[which(data$firstent=="NSI"), "firstent"] <- "NS"
+data[which(data$firstent=="NEPAD Secretariat"), "firstent"] <- "NEPAD"
+data[which(data$firstent=="LDCs"), "firstent"] <- "LDC Group"
+data[which(data$firstent=="ITTC Director"), "firstent"] <- "ITTC"
+data[which(data$firstent=="Head of Human Resources"), "firstent"] <- "Human Resources Section"
+
+### Merge European Commission, European Communities,
+## and European Union together for continutiy:
+
+data[which(data$firstent=="European Communities"), "firstent"] <- "European Union"
+data[which(data$firstent=="European Union"), "firstent"] <- "European Union"
+
+table(data$firstent)
+
+############################
+#### Create Dataframe with ISO3 Metadata
+############################
+
+speakers <- data ## duplicate for failsafe
+dim(speakers)## 8666
+colnames(speakers)
+
+##########################################
 ### Bring in World Bank data for countries:
+#########################################
+
 library(wbstats)
 
-str(wb_cachelist, max.level = 1)## what variables are there?
+metacols <- c("country", "region",
+              "iso3c","income_level_iso3c" )
 
-class(wb_cachelist) ## list
+meta.inc <- wb_cachelist$countries[,metacols]
 
-head(wb_cachelist$countries) ## has "income" as a variable:
+head(meta.inc)
 
-meta.inc <- wb_cachelist$countries[,c("country", "region",
-                                      "iso3c", "incomeID",
-                                      "income")]
-
-## Test to see what might be missing in merge:
-
-tmp1 <- unique(speakers$firstent)
-length(tmp1) ## 155
-
-overlap <- intersect(tmp1, meta.inc$country)
-
-missing <- setdiff(tmp1, meta.inc$country) ## countries in WTO speakers list but not WB metadata dataaset
-
-length(overlap) ## 110.
-
-length(missing) ## needed to hand-add: Iran, Antigua, Chainese Taipei;
-## Trinidad; Hong Kong, [south] Korea; Egypt; Venezuela
-
-## need to grep for the official names for those countries
-## us iso3c to create a merge key for the speakers:
-
-## 1- merge iso3c ids into my WTO data; then hand-add those 8 
-## then use iso3 to merge in the rest of the WB data
-
-## want: dataframe with my speaker countries + iso3c codes
+#######################
+## Use iso3c to create a merge key for the speakers:
 
 key.df <- as.data.frame(table(speakers$firstent))
-
-dim(key.df) ## 154 x2
-
 key.df$Var1 <- as.character(key.df$Var1)
-
-head(key.df)
-
-
-class(key.df$Var1)
 
 key.df <- merge(key.df,
                 meta.inc[,c("country", "iso3c")],
                 by.x="Var1",
                 by.y="country",
                 all.x=TRUE)
-                        
-
-head(key.df)
+                      
+######################
+## Manually add IS03C for corner cases
+######################
 
 key.df[which(key.df$Var1=="Antigua"), "iso3c"] <- "ATG"
 key.df[which(key.df$Var1=="Iran"), "iso3c"] <- "IRN"
 key.df[which(key.df$Var1=="Chinese Taipei"), "iso3c"] <- "TWN"
+key.df[which(key.df$Var1=="Taiwan"), "iso3c"] <- "TWN"
 key.df[which(key.df$Var1=="Trinidad"), "iso3c"] <- "TTO"
 key.df[which(key.df$Var1=="Venezuela"), "iso3c"] <- "VEN"
 key.df[which(key.df$Var1=="Korea"), "iso3c"] <- "KOR"
 key.df[which(key.df$Var1=="Cote-d-Ivoire"), "iso3c"] <- "CIV"
 key.df[which(key.df$Var1=="Egypt"), "iso3c"] <- "EGY"
-## Now that I have the iso3 codes for the countires in my data
-## merge in the rest of the meta.inc information into key.df
+key.df[which(key.df$Var1=="Swaziland"), "iso3c"] <- "SWZ"
+key.df[which(key.df$Var1=="Hong Kong"), "iso3c"] <- "HKG"
 
-head(key.df)
+## Fake ISO3 code for admin roles:
+key.df[grep("Chairman",x= key.df$Var1), "iso3c"] <- "ADMN"
+key.df[grep("Secretariat", x=key.df$Var1), "iso3c"] <- "ADMN"
+## Anything with Director, Committee, Division -> Admin
+key.df[grep(x=key.df$Var1, "Director"), "iso3c"] <- "ADMN"
+key.df[grep(x=key.df$Var1, "[Cc]ommittee"), "iso3c"] <- "ADMN"
+key.df[grep(x=key.df$Var1, "Division"), "iso3c"] <- "ADMN"
+key.df[grep(x=key.df$Var1, "Section"), "iso3c"] <- "ADMN"
+
+key.df ##Inspect
+
+########################
+### Merge in income info
+########################
 
 key.df <- merge(key.df,
                 meta.inc,
@@ -151,25 +190,19 @@ key.df$Freq <- NULL ## don't need
 key.df$countries <- NULL ## Var1 superceeds
 class(key.df$Var1)
 
-## give a faux-iso3c code NOST for non-state actor
-## call "Chairman", "Committee", Secretariat as ADMN
-## now pull this data into the speakers dataset:
-
+## Faux-iso3c code NOST for non-state actor and admin roles
 ## Come back to and clean up the non-state entries:
 
-key.df[which(key.df$Var1=="Chairman"), "iso3c"] <- "ADMN"
-key.df[which(key.df$Var1=="Chairperson"), "iso3c"] <- "ADMN"
-key.df[which(key.df$Var1=="Secretariat"), "iso3c"] <- "ADMN"
-key.df[which(key.df$Var1=="Committee"), "iso3c"] <- "ADMN"
-key.df[which(key.df$iso3c==NA), "iso3c"] <- "NOST"
+colnames(key.df)
 
-key.df[is.na(key.df$iso3c),c("iso3c", "region",
-                             "incomeID", "income")] <- "NOTST"
+key.df[is.na(key.df$iso3c),metacols] <- "NOTST"
+key.df[which(key.df$iso3c=="ADMN"), metacols] <- "NOTST"
 
-key.df[which(key.df$iso3c=="ADMN"),c("region",
-         "incomeID", "income")] <- "NOTST"
+key.df[which(key.df$country=="European Union"),
+       "income_level_iso3c"] <- "AGG"
 
-key.df[which(key.df$country=="European Union"), "incomeID"] <- "AGG"
+tail(key.df)
+
 
 ####### Merge into speakers dataset:
 
@@ -179,67 +212,19 @@ speakers.meta <- merge(x=speakers,
                        by.y="Var1",
                        all.x=TRUE)
 
-dim(speakers)
-dim(speakers.meta) ## 8636x 9, did work, just has a problem with the
-## entries with no identified spekers
-
-
 #########
 ## Clean up
 ###########
                                         
-dim(speakers.meta) ## 8636, so need to find the 7 that don't have anything
+dim(speakers.meta) ## 8666 x15
 
-speakers.meta$incomeID <- as.factor(speakers.meta$incomeID)
+colnames(speakers.meta)
 
-## There seems to be 7 rows that have document IDs and paragraph numbers,
-## but no text, or speakers. Will drop those:
+table(speakers.meta$docid)
 
-speakers.meta <- speakers.meta[!is.na(speakers.meta$incomeID==TRUE),]
+which(is.na(speakers.meta)) ## should be none
 
-## Conlidate some technically distinct, but theoretically linked
-## unique speakers:
-
-## Consolidate European Union, European Communities, European Commission
-## not technically the same, of course, but.. similar actor:
-speakers.meta$firstent <- as.character(speakers.meta$firstent)
-
-## "European Commission"  "European Communities" "European Union
-## choosing European Communities as the base because it is the most common
-speakers.meta[which(speakers.meta$firstent=="European Commission"),
-              "firstent"] <- "European Communities"
-
-speakers.meta[which(speakers.meta$firstent=="European Union"),
-                       "firstent"] <- "European Communities"
-
-### Now consolidate Chairperson into Chairman:
-
-speakers.meta[which(speakers.meta$firstent=="Chairperson"),
-              "firstent"] <- "Chairman"
-
-############################################
-### Fill in some holes in the data:
-###########################################
-
-#### Find the missing date or document id:
-
-which(is.na(speakers.meta$date))## 604
-
-## paragraph in meeting 76 from Burkina Faso:
-## add date for meeting 76
-
-speakers.meta[604, "date"] <- "2009-10-12"
-speakers.meta[604, "year"] <- 2009
-
-
-### Add a "country" name for Admin roles so that we don't get
-## lots of NAs:
-
-## Add the admin roles:
-
-speakers.meta[which(speakers.meta$iso3c=="ADMN"),
-              "country"] <- "Administration"
-
+####
 
 ## Add non-state speaker roles
 speakers.meta[which(speakers.meta$iso3c=="NOTST"),
@@ -250,5 +235,10 @@ speakers.meta[which(speakers.meta$iso3c=="NOTST"),
 ### Save metadata:
 #######################
 
-save(speakers.meta,
+
+write.csv(x=speakers.meta, ### write deduplified speaker data:
+          file=paste0(dataPathDesktop,
+                 "WTO_TD_July2020_DeDup.csv"))
+
+save(speakers.meta,## Save to work with
      file="speakersMeta.Rdata")
