@@ -31,9 +31,9 @@ savePath <- "./"
 
 load(paste0(dataPathDesktop,"speakersMeta.Rdata"))
 
+dim(speakers.meta)
 colnames(speakers.meta)
 
-dim(speakers.meta)
 
 ## Verify no missing data in the columns we'll use:
 sum(is.na(speakers.meta$docid))
@@ -78,7 +78,6 @@ speakers.meta$cleanedtext <- gsub(speakers.meta$cleanedtext,
 speakers.meta$cleanedtext <- gsub(speakers.meta$cleanedtext,
                                   pattern="http.",## http or https
                                   replace="")
-
 
 ## Remove extra whitespace
 speakers.meta$cleanedtext <- textclean::replace_white(speakers.meta$cleanedtext)

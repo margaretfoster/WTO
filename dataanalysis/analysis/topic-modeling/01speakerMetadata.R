@@ -10,16 +10,18 @@ loadPkg=function(toLoad){
         suppressMessages( library(lib, character.only=TRUE) ) }}
 
 
-packs <- c('tm', 'stm', 'pdftools',
+packs <- c('tm', 'stm',
            'tidyr', 'quanteda', "wbstats")
 
 packs2 <- c("stringr", "reshape2",
-            "dplyr", "ggplot2",  "magrittr")
+            "dplyr", "ggplot2")
 
 loadPkg(packs)
 loadPkg(packs2)
 
-#### Declare paths:
+###########################
+#### Declare Paths
+##########################
 
 if(Sys.info()['user']=="Ergane"){## desktop
     dataPathDesktop <- "~/Dropbox/WTO/"
@@ -55,16 +57,30 @@ table(data$docid) ## count an spread
 length(unique(data$docid)) ##109 meetings
 
 ########################
-### Come back to: reindex paragraph numbers
+### Reindex paragraph numbers
 ########################
 
-salient <- c("docid", "paranum", "X")
-data <- dplyr::arrange(data, paranum, group_by="docid")
+data <- dplyr::arrange(data, paranum, group_by="docid")## grouping by meeting, not speaker
 
+## meeting number:
 data$meetingno <- data$docid
 data$meetingno <- as.numeric(gsub(data$meetingno,
                        pattern="WTCOMTDM",
-                       replace=""))
+                                  replace=""))
+
+## add meeting-level paragraph counter:
+data <- data %>%
+    group_by(docid) %>%
+    mutate(paranum = dplyr::row_number())
+
+## Add full-data paragraph counter:
+
+## NOTE: the underlying dataframe is still ordered according to
+## speaker,so "paranum" counter is sequential within meetings
+## but the full-data counter is not.
+data$pid <- 1:dim(data)[1] ## paragraph ID, will use for attaching metadata
+data$X <- NULL ## get rid of "X" junk row
+colnames
 
 ########################
 
@@ -219,11 +235,12 @@ speakers.meta <- merge(x=speakers,
                        by.y="Var1",
                        all.x=TRUE)
 
-#########
+
+#################################
 ## Clean up
-###########
+################################
                                         
-dim(speakers.meta) ## 8666 x15
+dim(speakers.meta) ## 8659 x15
 
 colnames(speakers.meta)
 

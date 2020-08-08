@@ -1,7 +1,7 @@
-### Preliminary analysis of trade and development
-## Using speaker-level metadata about country wealth
-## from World Bank data
-
+##### Since we have no clear diagnostics
+##### on topic number to choose
+#### seeing what the built-in "inductive"
+#### discovery algorithm chooses 
 
 rm(list=ls())
 
@@ -11,71 +11,37 @@ loadPkg=function(toLoad){
             { install.packages(lib, repos='http://cran.rstudio.com/') }
         suppressMessages( library(lib, character.only=TRUE) ) }}
 
-
-packs <- c('tm', 'stm', 'pdftools',
-           'tidyr', 'quanteda', "wbstats")
-
-packs2 <- c("stringr", "reshape2",
-            "dplyr", "ggplot2",  "magrittr")
+packs <- c('tm', 'stm')
 
 loadPkg(packs)
-loadPkg(packs2)
 
-dataPathDesktop <- "~/Dropbox/WTO/rdatas/"
+########################
+## Declare Data Paths
+#########################
 
 
-dataPath <- "../../"
-savePath <- "./"
+if(Sys.info()['user']=="Ergane"){ ## if on my own machine look in Dropbox
+    dataPathDesktop <- "~/Dropbox/WTO/rdatas/"
+    print(paste0("The datapath is: ", dataPathDesktop))
+}else{ ## else look in ~/WTO/
+    dataPathDesktop <- "../../"
+    print(paste0("The datapath is: ", dataPathDesktop))
+}
 
-## This has the WTO paragraph-level data,
-## post-processing cleanup
-## and wealth info
+###############################
+### Load centrally-processed data
+###############################
 
-load(paste0(dataPathDesktop,"speakersMetaCleaned.Rdata"))
+load(paste0(dataPathDesktop,"processedTextforSTM.Rdata"))
 
-colnames(speakers.meta)
-
-dim(speakers.meta)
-
-## Verify no missing data in the columns we'll use:
-sum(is.na(speakers.meta$docid))
-sum(is.na(speakers.meta$country))
-sum(is.na(speakers.meta$date))
-sum(is.na(speakers.meta$cleanedtext))
-sum(is.na(speakers.meta$firstent))
-
+ls()
 
 #################
 ##### Analysis
 ##################
 
-processed <- textProcessor(documents=speakers.meta$cleanedtext,
-                           metadata=speakers.meta)
-
-summary(processed) ## 8515 documents (paragraphs), 9570  word dictionary
-
-
-out <- prepDocuments(processed$documents,
-                     processed$vocab,
-                     processed$meta) ## 8629 docums, 5856 terms
-
-## Convert "date" field into a numeric counter:
-
-sum(is.na(out$meta$date))
-
-out$meta$numdate <- as.numeric(out$meta$date)
-
-head(out$meta$numdate)
-head(out$meta$date)
-
-## rename objects for ease of reference:
-docs <- out$documents
-vocab <- out$vocab
-meta <- out$meta
-
-
 ############################
-#### Start running some models
+#### Inductive K discovery
 ###########################
 
 set.seed(61920)
@@ -94,14 +60,26 @@ save(mod.out.Ind,
      file=paste0(dataPathDesktop,
          "modoutInductiveK.Rdata"))
 
- 
+############################
+## Optional: Run N more times
+## To check for consistency
+############################
+## Run a few more and see what I get:
 
-prep.70 <- estimateEffect(c(1:70)~ s(numdate) +
-                          as.factor(income_level_iso3c),
-                       mod.out.70,
-                       metadata=meta,
-                       documents=docs,
-                       uncertainty=c("Global"))
+## R=10
+## for(r in 1:R){
+    
+##     mod.out.Ind <- stm(documents=docs,
+##                        vocab=vocab,
+##                        data=meta,
+##                        init="Spectral",
+##                        K=0, ## What does STM come up with?
+##                        prevalence= ~ s(numdate) +
+##                        as.factor(income_level_iso3c),
+##                        seed=61920)
 
-save.image(file=paste0(dataPathDesktop,
-               "tradDevPara_70.RData"))
+## save(mod.out.Ind,
+##      file=paste0(dataPathDesktop,
+##          "modoutInductiveK",r,".Rdata"))
+## }  
+

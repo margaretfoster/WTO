@@ -1,6 +1,6 @@
-### Preliminary analysis of trade and development
-## Using speaker-level metadata about country wealth
-## from World Bank data
+#########
+### Model select K20
+#########
 
 rm(list=ls())
 
@@ -35,31 +35,25 @@ if(Sys.info()['user']=="Ergane"){ ## if on my own machine look in Dropbox
 
 load(paste0(dataPathDesktop,"processedTextforSTM.Rdata"))
 
-#################
+#############################
 ##### Analysis
-##################
-
-############################
-#### How does K=20 look?
-###########################
+#############################
+#############################
+#### Model Search K=20
+#############################
 
 set.seed(61920)
 
-mod.out.20 <- stm(documents=docs,
-               vocab=vocab,
-               data=meta,
-               K=20, ## 
-                  prevalence= ~ s(numdate) +
-                  as.factor(income_level_iso3c),
-               seed=61920)
- 
 
-prep.20 <- estimateEffect(c(1:20)~ s(numdate) +
-                          as.factor(income_level_iso3c),
-                       mod.out.20,
-                       metadata=meta,
-                       documents=docs,
-                       uncertainty=c("Global"))
+mod.select.20 <- stm::selectModel(documents=docs,
+                               vocab=vocab,
+                               data=meta,
+                               K=20, ## K20
+                               prevalence= ~ s(numdate) +
+                               as.factor(income_level_iso3c),
+                               seed=61920)
 
-save.image(file=paste0(dataPathDesktop,
-               "tradDevPara_20.RData"))
+
+save(mod.select.20,
+     file=paste0(dataPathDesktop,
+               "tradDevModSelect_20.RData"))
