@@ -254,6 +254,42 @@ which(is.na(speakers.meta)) ## should be none
 speakers.meta[which(speakers.meta$iso3c=="NOTST"),
               "country"] <- "Nonstate Rep"
 
+#########################
+## Read in network summaries
+#########################
+
+dp2 <- paste0(dataPathDesktop, "rdatas/")
+
+## Load mcdat2
+load(paste0(dp2, "country-meetingRefActivitySums.Rdata"))
+
+colnames(speakers.meta)
+
+head(speakers.meta[,c("firstent", "docid", "income_level_iso3c", "region")])
+head(mcdat2)
+
+speakers.meta <- merge(x=speakers.meta,
+              y=mcdat2,
+              by.x=c("docid", "firstent"),
+              by.y=c("docid", "country"),
+              all.x=TRUE)
+
+dim(speakers.meta)
+
+ofinterest <- c("docid", "firstent","numrefs",
+                "numsends", "delttype", "iso3c")
+
+head(speakers.meta[,ofinterest])
+
+speakers.meta[is.na(speakers.meta$numrefs), 'numrefs'] <- "NOTST"
+speakers.meta[is.na(speakers.meta$numsends), 'numsends'] <- "NOTST"
+speakers.meta[is.na(speakers.meta$delttype), 'delttype'] <- "NOTST"
+speakers.meta[is.na(speakers.meta$delta), 'delta'] <- "NOTST"
+
+
+head(speakers.meta[,ofinterest])
+tail(speakers.meta[,ofinterest])
+
 
 ########################
 ### Save metadata:
@@ -265,4 +301,4 @@ write.csv(x=speakers.meta, ### write deduplified speaker data:
                  "WTO_TD_July2020_DeDup.csv"))
 
 save(speakers.meta,## Save to work with
-     file="speakersMeta.Rdata")
+     file=paste0(dp2,"speakersMeta.Rdata"))

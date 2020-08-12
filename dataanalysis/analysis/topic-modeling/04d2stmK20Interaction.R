@@ -40,7 +40,7 @@ load(paste0(dataPathDesktop,"processedTextforSTM.Rdata"))
 ############################
 
 colnames(out$meta)
-table(out$meta$delttype) ## Based on type of network activity
+table(out$meta$delttype)
 
 ############################
 #### How does K=20 look?
@@ -52,12 +52,12 @@ mod.out.20 <- stm(documents=docs,
                vocab=vocab,
                data=meta,
                K=20, ## 
-                  prevalence= ~ s(numdate) +
+                  prevalence= ~ s(numdate) *
                   as.factor(delttype),
                seed=61920)
  
 
-prep.20 <- estimateEffect(c(1:20)~ s(numdate) +
+prep.20 <- estimateEffect(c(1:20)~ s(numdate) *
                           as.factor(delttype),
                        mod.out.20,
                        metadata=meta,
@@ -65,4 +65,4 @@ prep.20 <- estimateEffect(c(1:20)~ s(numdate) +
                        uncertainty=c("Global"))
 
 save.image(file=paste0(dataPathDesktop,
-               "tradDevPara_20DeltType.RData"))
+               "tradDevPara_20InteractDeltType.RData"))

@@ -9,7 +9,7 @@ if(Sys.info()['user']=="Ergane"){## desktop
     dataPathDesktop <- "~/Dropbox/WTO/rdatas/"
     print(paste0("On desktop, data path is ", dataPathDesktop))
 }else{ ## any other machine                                                                                                                                          
-    dataPathDesktop <- "~/Dropbox/WTO/"
+    dataPathDesktop <- "../../"
     print(paste0("On remote, data path is ", dataPathDesktop))
 }
 
@@ -44,4 +44,37 @@ ls()
 sink(file="summaryModK20.txt")
 summary(mod.out.20)
 sink()
+
+#######################
+## K 20 with interaction
+## on time and income
+#######################
+
+load(paste0(dataPathDesktop,
+            "tradDevPara_20Interact.RData"))
+
+ls()
+
+sink(file="summaryModK20Interact.txt")
+summary(mod.out.20)
+sink()
+
+
+#######################
+## K 20 with interaction
+## on time and network activity 
+#######################
+
+load(paste0(dataPathDesktop,
+            "tradDevPara_20InteractDeltType.RData"))
+
+ls()
+
+sink(file="summaryModK20Interact.txt")
+summary(mod.out.20)
+sink()
+
+
+
+
 
