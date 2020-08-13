@@ -14,9 +14,34 @@ if(Sys.info()['user']=="Ergane"){## desktop
 library(stm)
 library(stringr)
 library(lubridate)
+
 ###################################
-## Load model topic model
+## Load model
 ###################################
+                
+####################################
+#### K20
+####################################
+
+load(paste0(dataPathDesktop, "tradDevPara_20Interact.RData"))
+
+## mod.out.20 is the topic model results
+## prep.20 is the estimated effects
+## function is:
+## s(numdate)*as.factor(income_level_iso3c)
+
+plot(mod.out.20)
+
+## How do the topics differ by income?
+
+
+
+
+###################################
+### Plotting over time
+###################################
+
+## Declare date ranges for the axes:
 
 min(out$meta$date)
 max(out$meta$date)
@@ -33,31 +58,19 @@ yearseq <- seq(from=min(out$meta$date),
                 by="year")
 yearnames <- years(yearseq)
 
-                
-###################
-#### K270
-###################
-
-load(paste0(dataPathDesktop, "tradDevPara_20Interact.RData"))
-
-## mod.out.20 is the topic model results
-## prep.20 is the estimated effects
-## function is:
-## s(numdate)*as.factor(income_level_iso3c)
-
-plot(mod.out.20)
-
-###################################
-### Plotting over time
-###################################
-
-### Substantive interest:
+##############################
+### Substantive questions:
+############################
 ## What hapens with the small economies topic?
 
 ## Remind of income levels:
 table(out$meta$income_level_iso3c)
 
 dev.off()
+
+##############
+## Topic 5:
+#############
 
 plot(prep.20,
      topics=c(5),
