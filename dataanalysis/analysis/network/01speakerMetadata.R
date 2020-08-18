@@ -25,7 +25,7 @@ if(Sys.info()['user']=="Ergane"){## desktop
     dataPathDesktop <- "~/Dropbox/WTO/data/"
     print(paste0("On desktop, data path is ", dataPathDesktop))
 }else{ ## any other machine
-    dataPathDesktop <- "~/Dropbox/WTO/"
+    dataPathDesktop <- "../../"
     print(paste0("On remote, data path is ", dataPathDesktop))
 }
 
@@ -50,9 +50,10 @@ colnames(data)
 
 dim(data) ## 3478 x 13. No non-state
 
-length(unique(data$sender)) ##104
+length(unique(data$sender)) ##104 
 length(unique(data$target)) ## 145
 
+unique(data$target) ### States and territories
 
 ##############################
 ## Sidenote to get a feel for who is
@@ -65,45 +66,68 @@ freqSender <- freqSender[order(freqSender$Freq),]
 freqTarget <- freqTarget[order(freqTarget$Freq),]
 
 
-tail(freqSender)
+tail(freqSender) ## 104
+
 ## Top 6 senders (all years):
 ## US at 439, India 326, EU 281, Egypt 202, China 134, Canada 114
+
+dim(freqSender)
 
 tail(freqTarget)
 ## Top 6 targets (all years):
 ## EU at 337, India at 334, Egypt at 244, China at 182
-## US at 143 and Hong Kong at 143
+## US at 143 andHong Kong at  143
+ 
+library(ggplot2)
+
+ggdat <- freqSender
+head(ggdat)
+tail(ggdat)
 
 
-head(freqSender)
+gg <- ggplot(data=ggdat,
+             aes(y=Freq,
+                 x=factor(Var1,
+                          levels=Var1)))+
+    geom_point(color="blue")+
+    theme_bw()+
+    labs(x="Sending Country",
+         y= "Numer of Outgoing References (All Years)",
+         title="Distribution of Out References by States (all years)")+
+    theme(axis.text.x = element_text(angle = 90,
+                                     vjust = 0.5, hjust=1))
+   
+gg
 
-head(freqTarget)
+ggsave(gg,
+       file="outReferencesDist.pdf")
 
-colnames(data)
-head(data$doc_id)
-head(data)
+### in-references
 
-### what are the most frequent edges?
+ggdatr <- freqTarget
+head(ggdatr)
+tail(ggdatr)
 
-edgeL <- data[,c("sender", "target", "doc_id", "year")]
+gg <- ggplot(data=ggdatr,
+             aes(y=Freq,
+                 x=factor(Var1,
+                          levels=Var1)),
+             color="green")+
+    geom_point(color="green")+
+    theme_bw()+
+    labs(x="Sending Country",
+         y= "Numer of Incoming References (All Years)",
+         title="Distribution of In References by States (all years)")+
+    theme(axis.text.x = element_text(angle = 90,
+                                     vjust = 0.5, hjust=1))
+  
+gg
 
-head(edgeL)
+ggsave(gg,
+       file="InReferencesDist.pdf")
 
-## standard edge format:
 
-tmp <- paste0(edgeL$sender, "-", edgeL$target)
-
-edgeFreq <- as.data.frame(table(tmp))
-
-edgeFreq <- edgeFreq[order(edgeFreq$Freq),]
-colnames(edgeFreq) <- c("S-T", "Frequency")
-
-dim(edgeFreq) ##1362 unique ties
-
-## Ten most frequent:
-
-edgeFreq[1352:1362,]
-
+ 
 #######################################
 ## Now want a country-meeting dataset of
 ## references sent and references recieved
@@ -207,4 +231,5 @@ save(mcdat2,
 
 
 
+  
  
