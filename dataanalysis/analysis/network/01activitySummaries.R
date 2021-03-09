@@ -151,7 +151,7 @@ colnames(datT)[which(colnames(datT)=='n')] <- 'numrefs'
 head(datS)
 head(datT)
 
-
+### looking at what this dataframe looks like for EU:
 print(datS[which(datS$sender=="EU"),], n=104)
 print(datT[which(datT$target=="EU"),], n=104)
 

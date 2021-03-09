@@ -1,8 +1,9 @@
- 
+## Last used: 1/21/21 
 
 ## This script to make 5 2x4 visualizationsn
 ## of the topic prevalences over time
 ## according to speaker income type
+## and relative sender/reciever activity
 
 ######################
 ## Declare Data Paths
@@ -60,7 +61,7 @@ dev.off()
 ## extract for modularity (and ease of typing):mvar <- "delttype" ## moderator variable
 
 ls()
-n
+
 names(mod.out.20.send)
 
 names(mod.out.20.send$settings)
@@ -89,6 +90,8 @@ mcols <- c("darkgray", ## None/Low
            "darkgreen") ##Top 5%
 
 ls()
+
+
 ### Extract Effect, sender activity model
 effect.Send <- lapply(mvalsSend, function(l) { ## creates a 6-entry list
     extract.estimateEffect(x=prep.20.send, ## pulls out the estimated effect
