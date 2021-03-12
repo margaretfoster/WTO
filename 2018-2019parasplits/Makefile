@@ -1,7 +1,10 @@
 
 
 ## This  makefile to clean the data for the 2018-2019 WTO data cleaning
+## Note that adapted11NER.py really needs to run on a computer without python3 downloaded, or there will be problems with NLTK
+## (MJF workflow: that means the vcm 12266 machine)
 
+ 
 .PHONY : wtodata
 wtodata : 01wtoparas.csv 02wtoNER.csv 03withfirstentity.csv WTO_TD_NER_Data.csv
 
@@ -23,7 +26,7 @@ WTO_TD_NER_Data.csv : 03withfirstentity.csv
 	Rscript --vanilla 04dateMetaData.R 03withfirstentity.csv WTO_TD_NER_Data.csv
 
 WTO_TD_NER_Sentences.csv: WTO_TD_NER_Data.csv
-	Rscript --vanilla 05sentencesConvert.R WTO_TD_NER_Data.csv WTO_TD_NER_Sentences.csv
+ex	Rscript --vanilla 05sentencesConvert.R WTO_TD_NER_Data.csv WTO_TD_NER_Sentences.csv
 
 .PHONY : clean
 clean :

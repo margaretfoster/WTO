@@ -7,9 +7,6 @@
 
 rm(list=ls())
 
-## working with the MeetingNotesCopy directory
-## to keep titles the same
-
 ## load libraries:prelimsetup.R
 source('../code/prelimsetup.R')
 args = commandArgs(trailingOnly=TRUE)
@@ -22,11 +19,11 @@ readPath1 <- args[1] ## data
 outFile <- args[2] ## output name
 
 
-
+## Look for files that start with "WTCOMTDM":
 files <- list.files(readPath1, pattern="^[WTCOMTDM]",
                     ignore.case=TRUE)
 
-length(files) ## 69 only?
+print(paste0("Found", length(files), " minute meetings"))
 
 
 allparas <- data.frame()
@@ -34,7 +31,7 @@ allparas <- data.frame()
 for(j in files){
     print(j)
      txt <- read_file(paste0(readPath1, j))
-     ## this data I hand split to insert a && at the start of
+     ## Data has a && inserted at the start of
      ## a paragraph that changed the speaker
     txt <- strsplit(txt, split='&&')
 
@@ -43,7 +40,7 @@ for(j in files){
                          strings.as.factors=FALSE,
                          col.names="text")
     dat$doc <- j 
-    ## need to add a paragraph counter
+    ## Add a paragraph counter
     dat$paranum <- 1:dim(dat)[1]
     dat$key <- paste0(dat$doc, "_para", dat$paranum) ## data row with doc + paranumber
     print("dat made")
@@ -53,27 +50,25 @@ for(j in files){
     
 }
 
-dim(allparas) ## 5688 X 4
+
+print(paste0("paragraph dimensions:", dim(allparas)))
 
 ## now figure out the encoding:
 
-print(colnames(allparas)) ## text, doc, paranum, key
+##print(colnames(allparas)) ## text, doc, paranum, key
 
 allparas$text <- as.character(allparas$text)
 
-class(allparas$text)
-Encoding(allparas$text) ## some UTF-8, some "unknown"
-
-table(Encoding(allparas$text)) ## unknown= 4005, UTF-8 1683
-
-## what does one of the "unknown" encodings look like?
-head(allparas[5686, "text"])## unknown encoding
-head(allparas[5685, "text"]) ## UTF-8 Encoding
+print("Summary of paragraph encoding schemes in original data:")
+table(Encoding(allparas$text)) ##
 
 ## enc2utf8 converts to utf-8:
-
 allparas$text <- enc2utf8(allparas$text)
 
+print("Summary of paragraph encoding schemes after conversion:")
+table(Encoding(allparas$text)) ##
+
+print("Saving csv" )
 
 write.csv(allparas,
           file=outFile)
