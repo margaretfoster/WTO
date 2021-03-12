@@ -26,7 +26,7 @@ if(Sys.info()['user']=="Ergane"){ ## if on my own machine look in Dropbox
     dataPathDesktop <- "~/Dropbox/WTO/rdatas/"
     print(paste0("The datapath is: ", dataPathDesktop))
 }else{ ## else look in ~/WTO/
-    dataPathDesktop <- "../../"
+    dataPathDesktop <- ""
     print(paste0("The datapath is: ", dataPathDesktop))
 }
 
@@ -34,18 +34,17 @@ if(Sys.info()['user']=="Ergane"){ ## if on my own machine look in Dropbox
 ## post-processing cleanup
 ## and wealth info
 
-load(paste0(dataPathDesktop,"processedTextforSTM.Rdata"))
-
-ls()
+load(paste0(dataPathDesktop,"processedTextforSTM.RData"))
 
 #################
 ##### Analysis
 #### Search K over large number of potential topics
 ###########################
-
 ### searchk
 
-Ks=seq(from=50, to=100,by=10)
+colnames(meta)
+
+Ks=seq(from=10, to=100,by=10)
 
 mod.tdsk <- searchK(documents=docs,
                        vocab=vocab,
@@ -56,5 +55,5 @@ mod.tdsk <- searchK(documents=docs,
                     seed=80620)
 
 save(mod.tdsk,
-     file=paste0(dataPathDesktop, "sK50to100.Rdata"))
+     file=paste0(dataPathDesktop, "sK10to100M1to113.Rdata"))
  
