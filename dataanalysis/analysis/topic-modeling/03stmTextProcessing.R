@@ -35,9 +35,15 @@ savePath <- "./"
 speakers.meta <- read.csv(paste0(dataPath,"WTOSpeakerTurnsM1to113.csv"),
                           stringsAsFactors=FALSE)
 
-colnames(speakers.meta)
+summary(speakers.meta)
 
 dim(speakers.meta) ##8855 x 15
+
+### Format variables into correct classes
+speakers.meta$date <- as.Date(speakers.meta$date,
+                              format="%Y-%m-%d")
+
+summary(speakers.meta$date)
 
 ## Verify no missing data in the columns we'll use:
 sum(is.na(speakers.meta$docid))
@@ -47,13 +53,17 @@ sum(is.na(speakers.meta$cleanedtext))
 sum(is.na(speakers.meta$firstent))
 
 ## The one NA is an empty row:
-
 speakers.meta <- na.omit(speakers.meta)
+
+
+### Add numdate for the STM model
+speakers.meta$numdate <- as.numeric(speakers.meta$date)
 
 dim(speakers.meta)
 
+
 #################
-##### Analysis
+##### Cleanup for STM
 ##################
 
 pageMarkupStopWords <- c("hyperref", "toc", "wtcomtdw",
@@ -70,15 +80,7 @@ out <- prepDocuments(processed$documents,
                      processed$vocab,
                      processed$meta)
 
-## Convert "date" field into a numeric counter:
-class(out$meta$date)
 
-head(out$meta$date)
-tail(out$meta$date)
-out$meta$date <- as.Date(out$meta$date,
-                         format="%Y-%m-$d")
-
-summary(out$meta$numdate)
 ## rename objects for ease of reference:
 docs <- out$documents
 vocab <- out$vocab
@@ -86,10 +88,6 @@ meta <- out$meta
 
 ls()
 
-############################
-#### Search K over large number of potential topics
-###########################
-
 save(out, docs, vocab, meta,
-     file=paste0(dataPathDesktop, "processedTextforSTM.RData"))
+     file=paste0(savePath, "processedTextforSTM.RData"))
  
