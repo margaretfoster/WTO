@@ -217,6 +217,8 @@ tail(data$cleanedtext)
 ##########################
 ## Merge into the rest of the data
 ## (via version on Google Drive at 3/07/21)
+## NOTE: need to make sure that the date field is
+## actually a "date"
 
 masterdat <- read.csv("../WTOCTDParasFeb2021.csv",
                       stringsAsFactors=FALSE)
@@ -243,7 +245,16 @@ data$Freq <- NULL
 colnames(masterdat)
 colnames(data)
 
-dim(masterdat)
+## convert "date" into as.Date
+
+class(masterdat$date)
+
+masterdat$date[351] ## %Y-m-d
+
+masterdat$date <- as.Date(masterdat$date)
+
+head(masterdat$date)
+class(masterdat$date) ## date
 
 ## merge the two
 ### country in the new data:
@@ -257,11 +268,12 @@ data[which(data$iso3c=="ADMN"),
 
 data[,c("firstent", "region", "country")]
 
-
 setdiff(colnames(masterdat), colnames(data))
 setdiff(colnames(data), colnames(masterdat))
 
 masterDat2 <- rbind(masterdat, data)
+
+summary(masterDat2)
 
 write.csv(masterDat2,
           file="WTOSpeakerTurnsM1to113.csv")
