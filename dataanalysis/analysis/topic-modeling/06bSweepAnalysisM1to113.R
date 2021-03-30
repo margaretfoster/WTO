@@ -12,7 +12,8 @@ loadPkg=function(toLoad){
 
 
 packs <- c('tm', 'stm', 'pdftools',
-           'tidyr', 'quanteda')
+           'tidyr', 'quanteda',
+           'stminsights', "rsconnect")
 
 loadPkg(packs)
 
@@ -21,41 +22,40 @@ loadPkg(packs)
 ## Declare Data Paths
 #########################
 
-if(Sys.info()['user']=="Ergane"){ ## if on my own machine look in Dropbox
+if(Sys.info()['user']=="Ergane"){ ## desktop
     dataPathDesktop <- "~/Dropbox/WTO-Data/rdatas/"
     print(paste0("The datapath is: ", dataPathDesktop))
-}else{ ## else look in ~/WTO/
-    dataPathDesktop <- "../../"
-    print(paste0("The datapath is: ", dataPathDesktop))
-}
+}else{
+    if(Sys.info()['user']=="Promachos"){ ## laptop
+        dataPathDesktop <- "~/Dropbox/WTO-Data/rdatas/"
+        print(paste0("The datapath is: ", dataPathDesktop))
+    }else{ ## else look in ~/WTO/
+        dataPathDesktop <- "../../"
+        print(paste0("The datapath is: ", dataPathDesktop))
+    }}
 
 #############################
 ## Load Processed Data
 #############################
 
-load(paste0(dataPathDesktop, "tradDevPara_15to25M113.RData"))
+load(paste0(dataPathDesktop, ## Models
+            "tradDevPara_15to25M113.RData"))
+
+load(paste0(dataPathDesktop, ## Estimated effects
+            "tradDevParaM1to113-Pandemic.RData"))
 
 ls()
 
-summary(mod.out.15)
 
 summary(mod.out.20)
-
+summary(mod.out.21)
 summary(mod.out.22)
-
 summary(mod.out.23)
 summary(mod.out.24)
 summary(mod.out.25)
 
-load(paste0(dataPathDesktop, "tradDevParaM1to113-Pandemic.RData"))
-
-ls()
-
-summary(mod.out.21)
 
 ## plot a comparison of the topic prevalences and top words
-
-
 
 library("ggthemes")
 library(tidyverse)
@@ -101,4 +101,51 @@ plot(mod.out.25, main = "25 Topic Model (frex)", n=5,
 dev.off()
 
 
-### Perspectives shows topics according to a covariate:
+pdf(file="K15-85-100ComparisonFrex.pdf")
+par(mfrow=c(2, 4))
+plot(mod.out.85,
+     topics=c(1:21), 
+     main ="85 Topic Model (frex)", n=5,
+     labeltype = c("frex"))
+plot(mod.out.85,
+     topics=c(22:42), 
+     main ="85 Topic Model (frex)", n=5,
+     labeltype = c("frex"))
+plot(mod.out.85,
+     topics=c(43:63), 
+     main ="85 Topic Model (frex)",
+     n=5,
+     labeltype = c("frex"))
+plot(mod.out.85,
+     topics=c(64:85), 
+     main ="85 Topic Model (frex)", n=5,
+     labeltype = c("frex"))
+plot(mod.out.100,
+     topics=c(1:25),
+     main ="100 Topic Model (frex)", n=5,
+     labeltype = c("frex"))
+plot(mod.out.100,
+     topics=c(26:50),
+     main ="100 Topic Model (frex)", n=5,
+     labeltype = c("frex"))
+plot(mod.out.100,
+     topics=c(50:75),
+     main ="100 Topic Model (frex)", n=5,
+     labeltype = c("frex"))
+plot(mod.out.100,
+     topics=c(76:100),
+     main ="100 Topic Model (frex)", n=5,
+     labeltype = c("frex"))
+dev.off()
+
+
+ls()
+
+## Remove the low models:
+
+## Save the "out" data object; models; and estimated effects
+save.image(file=paste0(dataPathDesktop,
+               "stmM1to113ComparisonK20to25-85-100.Rdata"))
+
+
+
