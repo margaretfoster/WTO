@@ -1,8 +1,12 @@
 ##library(stminsights)
 
+rm(list=ls())
+
 ######################
 ## Declare Data Paths
 ######################
+
+Sys.info()
 
 if(Sys.info()['user']=="Ergane"){## desktop                              
     dataPathDesktop <- "~/Dropbox/WTO-Data/rdatas/"
@@ -15,9 +19,11 @@ if(Sys.info()['user']=="Ergane"){## desktop
 library(stm)
 
 #####
-## Summarize Searchk for the full meeting range
+## Summarize searchK for the full meeting range
 
-load(paste0(dataPathDesktop, "tradDevParaM1to113-Pandemic.RData"))
+## load(paste0(dataPathDesktop, "tradDevParaM1to113-Pandemic.RData"))
+
+load(paste0(dataPathDesktop, "Pairwise/K24-25Model.Rdata"))
 
 ls()
 
