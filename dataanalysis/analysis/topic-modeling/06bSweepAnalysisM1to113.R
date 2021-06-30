@@ -67,7 +67,7 @@ dim(mod.out.21$theta) ## 8853 x 21 ## documents x topic proportions
 class(mod.out.21$beta) ## list
 
 pdf(file="K20to25M113ComparisonProb.pdf")
-par(mfrow=c(2, 3))
+par(mfrow=c(3, 2))
 plot(mod.out.20, main = "20 Topic Model (prob) ", n=5,
      labeltype = c("prob"))
 plot(mod.out.21, main ="21 Topic Model (prob)", n=5,
