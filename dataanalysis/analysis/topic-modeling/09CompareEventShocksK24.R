@@ -94,7 +94,7 @@ out$meta$postXi <- ifelse(out$meta$year <= 2012,
 
 table(out$meta$iso3c.il, out$meta$postXi)
 
-## Pre-Post Trump/right-win populists
+## Pre-Post Trump/right-wing populists
 
 out$meta$postTrump <- ifelse(out$meta$year <= 2016,
                              0, 1)
