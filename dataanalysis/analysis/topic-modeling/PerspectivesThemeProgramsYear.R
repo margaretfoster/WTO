@@ -175,9 +175,7 @@ out$meta$cat <- as.factor(out$meta$cat)
 
 
 ###
-faction.model= ~s(year)+ faction
-category.model= ~s(year)+ cat
-
+R 
 #### Theme Cluster Models, Topic 1:
 
 set.seed(6889)

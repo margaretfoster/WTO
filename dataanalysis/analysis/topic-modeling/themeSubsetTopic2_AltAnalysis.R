@@ -35,7 +35,7 @@ if(Sys.info()['user']=="Ergane" |
 #############################
 ## Load Processed Data
 #############################
-load("twoTopicsAndSubSets-NoAdminSubset_Alt.Rdata")
+load("twoTopicsAndSubSets-NoAdminSubset_CatFac.Rdata")
 
 mod.out.2.meta <- out$meta
 dim(mod.out.2.meta) ## 5229 x 26

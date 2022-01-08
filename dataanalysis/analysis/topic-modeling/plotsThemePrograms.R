@@ -1,4 +1,4 @@
-## Generate figures that show topic proportions by
+A## Generate figures that show topic proportions by
 ## faction and framing categories
 
 rm(list=ls())
@@ -35,7 +35,7 @@ if(Sys.info()['user']=="Ergane" |
 ## Load Processed Data
 ## Data 1: K=10 model on Program subset
 #############################
-load("ProgramsSubSetstm.Rdata")
+load("ProgramsSubSetstmStemmed.Rdata")
 ## For summary statistics;
 
 ls()

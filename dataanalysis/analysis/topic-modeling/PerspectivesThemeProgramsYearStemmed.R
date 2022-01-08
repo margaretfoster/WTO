@@ -35,10 +35,10 @@ if(Sys.info()['user']=="Ergane" |
 #############################
 ## Load Processed Data
 #############################
-load("twoTopicsAndSubSets-NoAdminSubset_Alt.Rdata")
+load("twoTopicsAndSubSets-NoAdminSubset_CatFac.Rdata")
 
-## For summary statistics;
-## see the themSubsetTopic2_Alt.R script
+## For summary statistics
+## see K2ClassificationModel.R
 
 #####################################
 ##### Subset: Topic One-- "Process" Frame
@@ -179,48 +179,8 @@ out$meta$cat <- as.factor(out$meta$cat)
 faction.model= ~s(year)+ faction
 category.model= ~s(year)+ cat
 
-#### Theme Cluster Models, Topic 1:
-
-set.seed(6889)
-
-## Faction breakout:
-
-mod.out.themefaction <- stm(documents=out$documents,
-                      vocab=out$vocab,
-                      data=out$meta,
-                      K=5, ## 
-                      prevalence=faction.model,
-                      content= ~faction,
-               seed=61921)
-
-prep.out.themefaction <- estimateEffect(c(1:5) ~s(year)+ faction,
-                         mod.out.themefaction,
-                          metadata=out$meta,
-                          documents=out$documents,
-                          uncertainty=c("Global"))
-
-summary(mod.out.themefaction)
-
-## Redistributor/Reciprocator
-
-mod.out.themecat <- stm(documents=out$documents,
-                  vocab=out$vocab,
-                  data=out$meta,
-                 K=5, ## 
-                      prevalence=category.model,
-                      content= ~cat,
-               seed=61921)
-
-prep.out.themecat <- estimateEffect(c(1:5) ~s(year)+ cat,
-                         mod.out.themecat,
-                          metadata=out$meta,
-                          documents=out$documents,
-                          uncertainty=c("Global"))
-
-summary(mod.out.themecat)
-
-## k=10 topics:
-
+## Speaking Factions:
+## K=10 topics:
 
 mod.out10.themefaction <- stm(documents=out$documents,
                               vocab=out$vocab,
@@ -252,8 +212,5 @@ prep.out10.themecat <- estimateEffect(c(1:10) ~s(year)+ cat,
                           metadata=out$meta,
                           documents=out$documents,
                           uncertainty=c("Global"))
-
-
-## make.dt() combines doc-topic loadings (theta) +  metadata 
 
 save.image(file="ProgramsSubSetstmYearStemmed.Rdata")
