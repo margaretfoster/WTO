@@ -117,9 +117,9 @@ colnames(out$meta)
 dim(out$meta) ## 2340 
 
 ###
-faction.model= ~s(year) + faction
-category.model= ~s(year) + cat
-income.model = ~s(year) + income_level_iso3c
+faction.model= ~s(year) * faction
+##category.model= ~s(year) * cat
+income.model = ~s(year) * income_level_iso3c
 
 #### Theme Cluster Models, Topic 1:
 
@@ -135,11 +135,11 @@ mod.prog.themeinc <- stm(documents=out$documents,
                         content= ~income_level_iso3c,
                         seed=61921)
 
-prep.prog.themeinc <- estimateEffect(c(1:10) ~s(year)+ income_level_iso3c,
-                                        mod.prog.themeinc,
-                                        metadata=out$meta,
-                                        documents=out$documents,
-                                        uncertainty=c("Global"))
+prep.prog.themeinc <- estimateEffect(c(1:10) ~s(year)* income_level_iso3c,
+                                     mod.prog.themeinc,
+                                     metadata=out$meta,
+                                     documents=out$documents,
+                                     uncertainty=c("Global"))
 
 summary(mod.prog.themeinc)
 

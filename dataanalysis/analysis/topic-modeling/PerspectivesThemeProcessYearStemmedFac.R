@@ -119,8 +119,8 @@ colnames(out$meta)
 dim(out$meta) ## 2340 
 
 ###
-faction.model= ~s(year)+ faction
-category.model= ~s(year)+ cat
+faction.model= ~s(year) * faction
+##category.model= ~s(year)+ cat
 
 #### Theme Cluster Models, Topic 1:
 
@@ -136,7 +136,7 @@ mod.process.themefaction <- stm(documents=out$documents,
                             content= ~faction,
                             seed=61921)
 
-prep.process.themefaction <- estimateEffect(c(1:10) ~s(year)+ faction,
+prep.process.themefaction <- estimateEffect(c(1:10) ~s(year)* faction,
                                         mod.process.themefaction,
                                         metadata=out$meta,
                                         documents=out$documents,

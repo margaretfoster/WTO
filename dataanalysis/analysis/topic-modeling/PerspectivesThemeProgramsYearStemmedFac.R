@@ -121,7 +121,7 @@ dim(out$meta) ## 2598
 ###
 ## Model on specific subset:
 
-faction.model= ~s(year)+ faction
+faction.model= ~s(year)*faction
 
 set.seed(6889)
 
@@ -135,7 +135,7 @@ mod.programs.themefaction <- stm(documents=out$documents,
                             content= ~faction,
                             seed=61921)
 
-prep.programs.themefaction <- estimateEffect(c(1:10) ~s(year)+ faction,
+prep.programs.themefaction <- estimateEffect(c(1:10) ~s(year)* faction,
                                         mod.programs.themefaction,
                                         metadata=out$meta,
                                         documents=out$documents,

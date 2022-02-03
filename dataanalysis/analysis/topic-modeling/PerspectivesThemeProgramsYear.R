@@ -173,9 +173,7 @@ out$meta[which(
 out$meta$faction <- as.factor(out$meta$faction)
 out$meta$cat <- as.factor(out$meta$cat)
 
-
 ###
-R 
 #### Theme Cluster Models, Topic 1:
 
 set.seed(6889)

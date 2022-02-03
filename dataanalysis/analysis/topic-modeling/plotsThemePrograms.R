@@ -1,4 +1,4 @@
-A## Generate figures that show topic proportions by
+## Generate figures that show topic proportions by
 ## faction and framing categories
 
 rm(list=ls())
