@@ -34,19 +34,21 @@ load("~/Dropbox/WTO-Data/rdatas/processedTextforSTM.Rdata")
 
 tags <- read.csv("parasTaggedFrames500.csv")
 
+tags[which(tags$PID== "case 193"), "PID"] <- 1385
+
+tags$PID <- as.numeric(tags$PID)
+
+tagged.pids <- tags$PID
+
+length(tagged.pids) ##487
+
 ## Prep for Prediction:
 
 colnames(meta)[which(colnames(meta)=="pid")] <- "PID"
 
-length(tagged.pids) ##239
-
 untagged <- meta[!(meta$PID %in% tagged.pids),]
 
 dim(untagged) ##8614 x 16
-
-
-ls()
-head(meta)
 
 ## Merge tags and meta:
 tagged <- merge(tags,
@@ -55,7 +57,7 @@ tagged <- merge(tags,
                 by.y="pid",
                 all.x=TRUE)
 
-dim(tagged) ## 239 x 26
+dim(tagged) ## 487 x 23
 
 ## not-needed:
 tagged$numdate <- NULL
@@ -63,7 +65,7 @@ tagged$X.y <- NULL
 tagged$X.x <- NULL
 
 ## Group the frame clusters:
-## FrameR: donor preferences + reciprocator
+## FrameReciprocator: donor preferences + reciprocator
 ## FrameRedist: recipient preferences + redistributor
 
 tagged$Frame <- "Unknown"
@@ -367,7 +369,7 @@ tst.out <- rbind(tst[,cols2],
 
 ##%%%%%%%%%%%%%%%%%%%%
 ## Scale Predictions
-##%%%%%%%%%%%%%%%%%%%
+#%%%%%%%%%%%%%%%%%%%
 ##%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ## Scale prediction from RF Model:
@@ -377,7 +379,7 @@ tst.out <- rbind(tst[,cols2],
 rf.pred.all <- predict(rf.fit, untagged)
 wto.rf.aug <- augment(rf.fit, untagged)
 
-dim(wto.rf.aug) ## 8614 x 20
+dim(wto.rf.aug) ## 8367 x 20 ## => 8.8k- the 467 tagged
 
 ## GLM (glm.fit)
 glm.pred.all <- predict(glm.fit, untagged)
@@ -397,4 +399,5 @@ save(wto.glm.aug,
      wto.rf.aug,
      wto.svm.aug,
      wto.hand,
-     file="predicted-models.Rdata")
+     tagged,
+     file="predicted-models500.Rdata")

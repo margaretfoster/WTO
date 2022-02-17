@@ -2,6 +2,10 @@
 ## Compare if frame regression model would give different
 ## results for different classification algorithems
 
+## modified to take more than the 250
+## finishing the branch, though should
+## Move towards making a Make file
+
 rm(list=ls())
 
 loadPkg=function(toLoad){
@@ -39,10 +43,10 @@ if(Sys.info()['user']=="Ergane" |
 
 load("twoTopicsAndSubSets-NoAdminSubset_CatFac.Rdata")
 load(file="themeSubsetTheme2.Rdata")
-load(file="predicted-models.Rdata")
+load(file="predicted-models500.Rdata")
 
 ## Hand-Tagged:
-tags.hand <- read.csv("wto-hand-class.csv")
+tags.hand <- read.csv("wto-hand-class500.csv")
 
 colnames(tags.hand)
 tags.hand$X <- NULL
@@ -56,7 +60,6 @@ cols <- c("PID", ".pred_class",
           ".pred_Recip", ".pred_Redist",
           ".pred_Unknown")
 
-
 rf.preds <- rbind(wto.rf.aug[,cols],
                        tags.hand[,cols])
 
@@ -69,10 +72,9 @@ svm.preds <- rbind(wto.svm.aug[,cols],
 glm.preds <- rbind(wto.glm.aug[,cols],
                    tags.hand[,cols])
 
-delg.preds <- wto.hand[,cols]
+delg.preds <- wto.hand ## already added together
 
-## Sanity check: should be 8.8k:
-
+## Sanity check-- should all be the same & 8854
 dim(rf.preds)
 dim(nb.preds)
 dim(svm.preds)
@@ -281,8 +283,15 @@ others.plot <- dwplot(list(RF=rf.reg[[3]],
 
 
 ggsave(others.plot,
-       file="CompareCoefsGroup3.pdf")
+       file="CompareCoefsGroup3500T.pdf")
 ggsave(recip.plot,
-       file="CompareCoefsRecip.pdf")
+       file="CompareCoefsRecip500T.pdf")
 ggsave(redist.plot,
-       file="CompareCoefsRedist.pdf")
+       file="CompareCoefsRedist500T.pdf")
+
+
+###%%%%%%%%%%%%%%%%%%
+## Summary Stats
+##%%%%%%%%%%%%%%%%%%%
+
+
