@@ -1,4 +1,4 @@
-### Preliminary analysAis of trade and development
+### Preliminary analysis of trade and development
 ## Using speaker-level metadata about country wealth
 ## from World Bank data
 
