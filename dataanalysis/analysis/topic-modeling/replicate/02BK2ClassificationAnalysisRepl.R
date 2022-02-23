@@ -94,7 +94,6 @@ label.t2 <- paste0("Programs: ",
                                    n=5)$frex[2,]))
 
 
-
 png(file="overallThemesK2byyear.png")
 plot.estimateEffect(prep.2,
                     model=mod.out.2,
@@ -114,6 +113,7 @@ dev.off()
 
 
 ## Figure A2: Distribution of topic mixes
+## In Factions
 
 gg2 <- ggplot(dat=paraTopicsK2,
               aes(x=M2.Topic1,
@@ -122,7 +122,7 @@ gg2 <- ggplot(dat=paraTopicsK2,
     theme_bw()+
     ggtitle("Distribution of Topic Assignment: Process")
 
-ggsave(gg2, file="DistProcess.png")
+ggsave(gg2, file="DistProcessFaction.png")
 
 gg3 <- ggplot(dat=paraTopicsK2,
               aes(x=M2.Topic2,
@@ -131,7 +131,27 @@ gg3 <- ggplot(dat=paraTopicsK2,
     theme_bw()+
     ggtitle("Distribution of Topic Assignment: Programs")
 
-ggsave(gg3, file="DistPrograms.png")
+ggsave(gg3, file="DistProgramsFaction.png")
+
+
+gg4 <- ggplot(dat=paraTopicsK2,
+              aes(x=M2.Topic1,
+                  fill=income_level_iso3c))+
+    geom_density(alpha=.3)+
+    theme_bw()+
+    ggtitle("Distribution of Topic Assignment: Process")
+
+ggsave(gg4, file="DistProcessIncome.png")
+
+gg5 <- ggplot(dat=paraTopicsK2,
+              aes(x=M2.Topic2,
+                  fill=income_level_iso3c))+
+    geom_density(alpha=.3)+
+    theme_bw()+
+    ggtitle("Distribution of Topic Assignment: Programs")
+
+
+ggsave(gg5, file="DistProgramsIncome.png")
 
 ############################
 ##### Table A1: Summary of delegate activities

@@ -184,32 +184,8 @@ data <- dfm(data,
 
 out <- convert(data, to = 'stm')
 
-## Add faction/category metadata:
-
-#### Model sub-themes
-
-## For identification of redistributors and
-## reciprocators, see draft appendix
-
-recip <- c("European Union", "Canada",
-           "Japan", "Switzerland",
-           "Trinidad and Tobago",
-           "United States")
-
-redist <- c("Argentina","Bangladesh", "Bolivia",
-            "Brazil", "Cambodia", 
-            "China", "Cote d'Ivoire",
-            "Cuba", "Dominca", 
-            "Egypt", "El Salvador",
-            "Fiji", "Guatemala",
-            "India", "Jamaica",
-            "Kenya", "Lesotho", "Malaysia",
-            "Mexico", "Morocco",
-            "Poland", "Sri Lanka",
-            "Uganda", "Uruguay",
-            "Zambia")
-
-
+## Add a category for the Canada-EU-US & China-Egypt-India
+## factions that emerged
 ## Also more stripped-down factions:
 
 faction1 <- c("European Union", "Canada",
@@ -247,7 +223,7 @@ out$meta$cat <- as.factor(out$meta$cat)
 
 base.model = ~s(year)
 faction.model= ~s(year)+ faction
-category.model= ~s(year)+ cat
+income.model= ~s(year)+ income_level_iso3c
 
 ## Category Model:
 mod.out.2 <- stm(documents=out$documents,
@@ -262,9 +238,6 @@ prep.2 <- estimateEffect(c(1:2) ~s(year),
                              metadata=out$meta,
                              documents=out$documents,
                              uncertainty=c("Global"))
-
-## ugly patch while I decide if the year-only specification is what I want
-## to work with:
 
 mod.out.2.cat <- mod.out.2
 mod.out.2.fac <- mod.out.2
