@@ -23,7 +23,7 @@ load("PerspectivesThemeProgramsYearStemmedFacRepl.Rdata")
 ## And for estimate effects
 
 ## Topic Names via STM Viewer
-topicNames.fac <- c("DQDF for LDCs",
+topicNames.fac <- c("Market Access",
                     "Commodities",
                     "E-Commerce",
                     "TA Needed",
@@ -40,8 +40,7 @@ for(i in 1:10){
     plot.estimateEffect(x=prep.programs.themefac,
                         model=mod.programs.themefac,
                         covariate="year",
-                        main=paste0("Topic: \n",
-                            topicNames.fac[i]),
+                        main=topicNames.fac[i],
                         topics=c(i), 
                         method="continuous",
                         xlab="Year",
@@ -63,7 +62,7 @@ load("PerspectivesThemeProgramsYearStemmedIncRepl.Rdata")
 ls()
 
 topicNames.inc <- c("Small Economies",
-                    "DQDF for LDCs",
+                    "Market Access",
                     "Proposals",
                     "TA Requests",
                     "Training Requests",
@@ -81,8 +80,7 @@ for(i in 1:10){
     plot.estimateEffect(x=prep.programs.themeinc,
                         model=mod.programs.themeinc,
                         covariate="year",
-                        main=paste0("Topic: \n",
-                            topicNames.inc[i]),
+                        main=topicNames.inc[i],
                         topics=c(i), 
                         method="continuous",
                         xlab="Year",

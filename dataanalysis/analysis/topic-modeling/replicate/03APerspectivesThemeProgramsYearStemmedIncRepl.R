@@ -25,8 +25,7 @@ loadPkg(packs)
 load("twoTopicsAndSubSets-NoAdminSubset_CatFacRepl.Rdata")
 
 ## For summary statistics
-## see 02K2ClassificationModelRepl.R
-
+## see 02BK2ClassificationAnalysisRepl.R
 #####################################
 ##### Subset: Topic One-- "Programs" Frame
 ######################################
@@ -74,6 +73,7 @@ dim(progParas) ##3041 x 31
 
 colnames(progParas)
 
+table(progParas$region)
  
 ## Subset One: Clean the Programs paragraphs
 progParas$cleanedtext <- gsub("[[:digit:]]", "",
@@ -95,7 +95,7 @@ out <- convert(dat2, to = 'stm')
 
 colnames(out$meta)
 
-dim(out$meta) ## 2074 
+dim(out$meta) ## 3041
 
 ###################################
 faction.model= ~s(year)* faction ## US-EU-Can

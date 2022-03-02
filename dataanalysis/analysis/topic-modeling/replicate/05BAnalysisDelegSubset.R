@@ -1,3 +1,4 @@
+
 ### Preliminary analysis of trade and development
 ## Compare if frame regression model would give different
 ## results for different classification algorithems
@@ -36,14 +37,20 @@ loadPkg(packs)
 load("programsSubSetstmYearStemmedFacIncRepl.Rdata")
 
 ## This loads the predictions on Redist/Reciprocator
-load("predicted-models500Repl.Rdata")
+load("predicted-models500ReplDelegSubset.Rdata")
 
 ## Hand-Tagged:
 tags.hand <- read.csv("../wto-hand-class500.csv")
 
-colnames(tags.hand)
+colnames(tags.hand) <- tolower(colnames(tags.hand))
 tags.hand$X <- NULL
+tags.hand$.pred_class <- tolower(tags.hand$.pred_class)
+
 table(tags.hand$.pred_class) ## Recip 153; Redist 292; Unknown 42
+
+## Standarize the column names in lowercase:
+
+colnames(out$meta) <- tolower(colnames(out$meta))
 
 ## merge in the metadata to derive statistics about the
 ## top delegations:
@@ -53,7 +60,7 @@ tmp <- merge(meta[,c("pid", "firstent",
                          "region")],
              tags.hand,
              by.x="pid",
-             by.y="PID")
+             by.y="pid")
 
 dim(tmp) ## 478 (aka: 51 that got re-assigned to Programs after the re-estimation with no duplicates)
 
@@ -70,9 +77,9 @@ rm(tmp)
 ## wto.svm.aug
 
 
-cols <- c("PID", ".pred_class",
-          ".pred_Recip", ".pred_Redist",
-          ".pred_Unknown")
+cols <- c("pid", ".pred_class",
+          ".pred_recip", ".pred_redist",
+          ".pred_unknown")
 
 rf.preds <- rbind(wto.rf.aug[,cols],
                        tags.hand[,cols])
@@ -88,22 +95,79 @@ glm.preds <- rbind(wto.glm.aug[,cols],
 
 delg.preds <- wto.hand ## already added together
 
-delg.preds2 <- delg.preds[,c("PID", ".pred_class",
-                            ".pred_Recip", ".pred_Redist",
-                            ".pred_Unknown")]
+delg.preds2 <- delg.preds[,c("pid", ".pred_class",
+                             ".pred_recip",
+                             ".pred_redist",
+                            ".pred_unknown")]
 
 ## Sanity check-- should all be the same & 8854
 dim(rf.preds)
 dim(nb.preds)
 dim(svm.preds)
 dim(glm.preds)
-dim(delg.preds2)  ## this has 9 fewer?
+dim(delg.preds2)  ## this has 9 fewer; but the number is right for the model
+
+##%%%%%%%%%%%%%%%%%%%%%%%%
+## Pull some sample tags:
+##%%%%%%%%%%%%%%%%%%%%%
+
+names(rf.preds)
+summary(rf.preds)
+
+## Compare the predicted paragraphs in the not-hand-tagged set
+
+rf.pred.recip <- wto.rf.aug[which(
+    wto.rf.aug$.pred_class=="recip"),]$pid
+rf.pred.redist <- wto.rf.aug[which(
+    wto.rf.aug$.pred_class=="redist"),]$pid
+rf.pred.other <- wto.rf.aug[which(
+    wto.rf.aug$.pred_class=="unknown"), ]$pid
+
+delg.pred.recip <- delg.preds[which(
+    delg.preds$.pred_class=="recip"), ]$pid
+delg.pred.redist <- delg.preds[which(
+    delg.preds$.pred_class=="redist"),]$pid
+delg.pred.other <- delg.preds[which(
+    delg.preds$.pred_class=="unknown"),]$pid
+
+length(intersect(delg.pred.recip, rf.pred.recip)) ##59 + 153 shared
+length(intersect(delg.pred.redist, rf.pred.redist)) ##547 + the shared in hand.tagged
+
+
+overlap.recip <- intersect(delg.pred.recip, rf.pred.recip)
+overlap.recip
+
+sumcols <- c("cleanedtext", "meetingno", "year")
+
+out$meta[which(out$meta$pid==1266),sumcols] ## Japan, good candidate to highlight
+out$meta[which(out$meta$pid==1180),sumcols] ## CH looking for "synergies"
+out$meta[which(out$meta$pid==7495),sumcols] ## Long EU GSP presentation
+out$meta[which(out$meta$pid==8374),sumcols] ## Canada supports APEC
+out$meta[which(out$meta$pid==2960),sumcols] ## CH on tech communication, good candidate
+
+sink(file="highlightRecipFrame.txt")
+out$meta[which(out$meta$pid==7705), sumcols] ## US on their GSP, example of redistributor preference
+sink()
+
+
+## Example in both redistributor sets: 
+overlap.redist <- intersect(delg.pred.redist, rf.pred.redist)
+length(overlap.redist) #547
+
+overlap.redist
+
+out$meta[which(out$meta$pid==4415),sumcols] ## Good Uganda example
+
+sink(file="highlightRedistFrame.txt")
+out$meta[which(out$meta$pid==4405),sumcols] ## Uganda in M99
+sink()
 
 
 ##%%%%%%%%%%%%%%%%%%%%%%%%
 ## Attach topics to paragraphs
-
+##%%%%%%%%%%%%%%%%%%%%%%%%%
 ## Want the model with K=10| Meta = Programs
+
 mod2.out <- as.data.frame(
     round(mod.programs.themeincome$theta,2))
 
@@ -180,15 +244,17 @@ sendThrough <- function(predictedData, STMData){
     out4 <- merge(STMData, ## model predictions
                   predictedData,
                   by.x="pid",
-                  by.y="PID",
+                  by.y="pid",
                   all.x=TRUE)
-        
+    
+    predictedData$.pred_class <- tolower(predictedData$.pred_class)
+    
     out4$redistributors <- 0
-    out4[which(out4$.pred_class=="Redist"),
+    out4[which(out4$.pred_class=="redist"),
          "redistributors"] <- 1
     
     out4$reciprocators<- 0
-    out4[which(out4$.pred_class=="Recip"),
+    out4[which(out4$.pred_class=="recip"),
          "reciprocators"] <- 1
 
     ## Need topic proportion lag:
@@ -253,7 +319,7 @@ delg.reg <- sendThrough(predictedData=delg.preds2,
 
 library(dotwhisker)
 ## Reciprocator Prevalence
-recip.plot <- dwplot(list(RF=rf.reg[[1]],
+recip.plot.all <- dwplot(list(RF=rf.reg[[1]],
             SVM=svm.reg[[1]],
             GLM=glm.reg[[1]],
             NB=nb.reg[[1]],
@@ -274,14 +340,14 @@ recip.plot <- dwplot(list(RF=rf.reg[[1]],
             )) +
     xlab("Coefficient Estimate") +
     ylab("") +
-    ggtitle("Frame Prevalence After Shocks",
-            subtitle="Reciprocator Paragraphs") +
+    ggtitle("Program Theme Prevalence After Shocks",
+            subtitle="Reciprocator Delegate Paragraphs") +
     theme_bw()
 
 
 ## Redistributor Prevalence
 
-redist.plot <- dwplot(list(RF=rf.reg[[2]],
+redist.plot.all <- dwplot(list(RF=rf.reg[[2]],
             SVM=svm.reg[[2]],
             GLM=glm.reg[[2]],
             NB=nb.reg[[2]],
@@ -302,14 +368,14 @@ redist.plot <- dwplot(list(RF=rf.reg[[2]],
             )) +
     xlab("Coefficient Estimate") +
     ylab("") +
-    ggtitle("Frame Prevalence After Shocks",
-            subtitle="Redistributor Paragraphs") +
+    ggtitle("Program Theme Prevalence After Shocks",
+            subtitle="Redistributor Delegate Paragraphs") +
     theme_bw()
 
 
 ## Neither Reciprocator nor Redistributor
 
-others.plot <- dwplot(list(RF=rf.reg[[3]],
+others.plot.all <- dwplot(list(RF=rf.reg[[3]],
             SVM=svm.reg[[3]],
             GLM=glm.reg[[3]],
             NB=nb.reg[[3]],
@@ -330,17 +396,17 @@ others.plot <- dwplot(list(RF=rf.reg[[3]],
             )) +
     xlab("Coefficient Estimate") +
     ylab("") +
-    ggtitle("Frame Prevalence After Shocks",
-            subtitle="Other Paragraphs") +
+    ggtitle("Program Theme Prevalence After Shocks",
+            subtitle="Other Delegate Paragraphs") +
     theme_bw()
 
 
-ggsave(others.plot,
-       file="CompareCoefsGroup3500TRepl.pdf")
-ggsave(recip.plot,
-       file="CompareCoefsRecip500TRepl.pdf")
-ggsave(redist.plot,
-       file="CompareCoefsRedist500TRepl.pdf")
+ggsave(others.plot.all,
+       file="CompareCoefsGroup3500TReplDeleg.png")
+ggsave(recip.plot.all,
+       file="CompareCoefsRecip500TReplDeleg.png")
+ggsave(redist.plot.all,
+       file="CompareCoefsRedist500TReplDeleg.png")
 
 ###%%%%%%%%%%%%%%%%%%
 ## Just RF and Delegate
@@ -349,7 +415,7 @@ ggsave(redist.plot,
 
 library(dotwhisker)
 ## Reciprocator Prevalence
-recip.plot <- dwplot(list(RF=rf.reg[[1]],
+recip.plot.bw <- dwplot(list(RF=rf.reg[[1]],
             Deleg=delg.reg[[1]]),
        vline = geom_vline(
            xintercept = 0,
@@ -374,15 +440,15 @@ recip.plot <- dwplot(list(RF=rf.reg[[1]],
     )+
     xlab("Coefficient Estimate") +
     ylab("") +
-    ggtitle("Frame Prevalence After Shocks",
-            subtitle="Reciprocator Paragraphs") +
+    ggtitle("Program Theme Prevalence After Shocks",
+            subtitle="Reciprocator Delegate Paragraphs") +
     theme_bw()+
      theme(legend.position='bottom')
 
 
 ## Redistributor Prevalence
 
-redist.plot <- dwplot(list(RF=rf.reg[[2]],
+redist.plot.bw <- dwplot(list(RF=rf.reg[[2]],
             Deleg=delg.reg[[2]]),
        vline = geom_vline(
            xintercept = 0,
@@ -407,15 +473,15 @@ redist.plot <- dwplot(list(RF=rf.reg[[2]],
     )+
     xlab("Coefficient Estimate") +
     ylab("") +
-    ggtitle("Frame Prevalence After Shocks",
-            subtitle="Redistributor Paragraphs") +
+    ggtitle("Program Theme Prevalence After Shocks",
+            subtitle="Redistributor Delegate Paragraphs") +
     theme_bw()+
      theme(legend.position='bottom')
 
 
 ## Neither Reciprocator nor Redistributor
 
-others.plot <- dwplot(list(RF=rf.reg[[3]],
+others.plot.bw <- dwplot(list(RF=rf.reg[[3]],
             Deleg=delg.reg[[3]]),
                       vline = geom_vline(
                           xintercept = 0,
@@ -440,22 +506,22 @@ others.plot <- dwplot(list(RF=rf.reg[[3]],
     )+
     xlab("Coefficient Estimate") +
     ylab("") +
-    ggtitle("Frame Prevalence After Shocks",
-            subtitle="Other Paragraphs") +
+    ggtitle("Program Theme Prevalence After Shocks",
+            subtitle="Other Delegate Paragraphs") +
     theme_bw()+
    theme(legend.position='bottom')
 
 
 
-ggsave(others.plot,
-       file="CompareCoefsGroupRD500TRepl.png")
-ggsave(recip.plot,
-       file="CompareCoefsRecipRD500TRepl.png")
-ggsave(redist.plot,
-       file="CompareCoefsRedistRD500TRepl.png")
+ggsave(others.plot.bw,
+       file="BWCoefsGroupRD500TReplDeleg.png")
+ggsave(recip.plot.bw,
+       file="BWCoefsRecipRD500TReplDeleg.png")
+ggsave(redist.plot.bw,
+       file="BWCoefsRedistRD500TReplDeleg.png")
 
 
-## All stacked together:
+## All Frames on the Random Forest Classification:
 rf.plot <- dwplot(list(Recip=rf.reg[[1]],
                        Redist=rf.reg[[2]],
                        Other=rf.reg[[3]]),
@@ -482,45 +548,14 @@ rf.plot <- dwplot(list(Recip=rf.reg[[1]],
     ) +
     xlab("Coefficient Estimate") +
     ylab("") +
-    ggtitle("Frame Prevalence After Shocks",
-            subtitle="Random Forest Classification") +
+    ggtitle("Program Theme Prevalence After Shocks",
+            subtitle="Random Forest Classification, Delegate Paragraphs") +
     theme_bw()
 
 rf.plot
 
 ggsave(rf.plot,
-       file="RFCoefficientsRD500TRepl.png")
+       file="RFCoefficientsRD500TReplDeleg.png")
 
-
-
-## All stacked together:
-comp.plot <- dwplot(list(
-    RF.Recip=rf.reg[[1]],
-    RF.Redist=rf.reg[[2]],
-    RF.Other=rf.reg[[3]],
-    D.Recip=delg.reg[[1]],
-    D.Redist=delg.reg[[2]],
-    D.Other=delg.reg[[3]]),
-                     vline = geom_vline(
-                         xintercept = 0,
-                         colour = "grey60",
-                         linetype = 2
-                         ))  %>% # plot line at zero _behind_coefs
-    relabel_predictors(
-        c(
-            chinashock = "China Joins",
-            FCshock = "2008 FC",
-            Xishock = "Xi Ascends",
-            Trumpshock = "Trump Elected",
-            covidshock = "Covid",
-            lag.M2T2 = "Deleg. Prev. Turn"
-            )) +
-    xlab("Coefficient Estimate") +
-    ylab("") +
-    ggtitle("Frame Prevalence After Shocks",
-            subtitle="Delegate Classification") +
-    theme_bw()
-
-comp.plot
 
 

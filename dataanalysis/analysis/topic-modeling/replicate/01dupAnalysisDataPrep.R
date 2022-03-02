@@ -9,8 +9,9 @@ rm(list=ls())
 loadPkg=function(toLoad){
     for(lib in toLoad){
         if(! lib %in% installed.packages()[,1])
-            { install.packages(lib, repos='http://cran.rstudio.com/') }
-        suppressMessages( library(lib, character.only=TRUE) ) }}
+            {install.packages(lib,
+                              repos='http://cran.rstudio.com/')}
+        suppressMessages(library(lib, character.only=TRUE))}}
 
 packs <- c('tm', 'stm', 'readxl',
            'tidyr', 'quanteda')
@@ -127,6 +128,7 @@ dim(num.vsim) ##1808
 
 head(num.match)
 
+## Find out which these documents are:
 check <- num.match %>% left_join(key,
                                  by=c("a"= "docid"),
                                  keep=TRUE) %>%
@@ -205,7 +207,7 @@ dim(nsa.check)## 706 x 16
 ## Tricky part for the state subset:
 ## Merge in with the downstream hand-classified, texts which had a few duplicates:
 
-class2<- read.csv("wto-hand-class500.csv")
+class2<- read.csv("../wto-hand-class500.csv")
 
 dim(class2) ## 487
 
@@ -220,9 +222,9 @@ length(deleg.check$pid.b[check$pid.b %in% did.code]) ## 14
 
 ## make a column for coded:
 
-delg.check$coded.a <- 0
+deleg.check$coded.a <- 0
 deleg.check$coded.b <- 0
-delg.check[which(deleg.check$pid.a %in% did.code),
+deleg.check[which(deleg.check$pid.a %in% did.code),
       "coded.a"] <- 1
 deleg.check[which(deleg.check$pid.b %in% did.code),
       "coded.b"] <- 1
@@ -266,13 +268,33 @@ omit <- c(deleg.check$excise, nsa.check$pid.b)
 length(omit)
 
 ##%%%%%%%%%%%%%%%%%%%%
-## Update without the duplicates
+## Update without the Duplicates
 ## %%%%%%%%%%%%%%%%%%%%
 
 speakers.meta2 <- speakers.meta[!(speakers.meta$pid
                                   %in% omit),]
 
 dim(speakers.meta2) ##8456 x 16
+
+rm(speakers.meta) ## remove first set to reduce potential for cross-contamination
+
+## Merge "AGG" into "HIC"
+## B/C the AGG designation is confusing
+## "AGG" is always the EU/EC
+## Likewise, "Aggregates" in the region is also the EU/EC
+
+speakers.meta2[which(
+    speakers.meta2$income_level_iso3c=="AGG"),
+              "income_level_iso3c"] <- "HIC"
+
+table(speakers.meta2$income_level_iso3c)
+
+## Move the EU/EC Countries back into "Europe"
+speakers.meta2[which(
+    speakers.meta2$region=="Aggregates"),
+               "region"] <- "Europe & Central Asia"
+
+table(speakers.meta2$region)
 
 #################
 ##### Cleanup for STM
@@ -298,8 +320,8 @@ docs <- out$documents
 vocab <- out$vocab
 meta <- out$meta
 
-ls()
 
 save(out, docs, vocab, meta,
-     file=paste0(dataPath, "processedTextforSTMDeDeup.RData"))
+     file=paste0(dataPath, "/rdatas/",
+         "processedTextforSTMDeDeup.RData"))
  

@@ -10,8 +10,9 @@ rm(list=ls())
 loadPkg=function(toLoad){
     for(lib in toLoad){
         if(! lib %in% installed.packages()[,1])
-            { install.packages(lib, repos='http://cran.rstudio.com/') }
-        suppressMessages( library(lib, character.only=TRUE) ) }}
+            {install.packages(lib,
+                               repos='http://cran.rstudio.com/')}
+        suppressMessages( library(lib, character.only=TRUE))}}
 
 
 packs <- c('tm', 'stm', 'pdftools',
@@ -41,17 +42,16 @@ if(Sys.info()['user']=="Ergane" |
 load(paste0(dataPathDesktop,
             "processedTextforSTMDeDeup.RData"))
 
-############################
-##### Analysis
-############################
+ls()
 
 ############################
-## Inductive Search for Underlying dimensions of discussion
+## Inductive Search for underlying dimensions of discussion
 ## & Which delegations are most associated with those
 ## topics in each meeting
 ############################
 ## Identify the shocks
 ## Pre/post China
+
 
 out$meta$chinajoined <- ifelse(out$meta$year <= 2001,
                                0, 1)
@@ -143,8 +143,11 @@ summary(out$meta[which(
 
 ######################
 ## Subset data to omit non-state speakers
-## (Here as all actors not associated with a specific geography)
-geos <- c("Aggregates", "East Asia & Pacific",
+## (Operationalized as actors not associated with a specific geography)
+
+table(out$meta$region)
+
+geos <- c("East Asia & Pacific",
           "Europe & Central Asia",
           "Latin America & Caribbean",
           "Middle East & North Africa", "North America",
@@ -156,7 +159,7 @@ geos <- c("Aggregates", "East Asia & Pacific",
 states.subset <- out$meta[which(out$meta$region %in% geos),]
 
 dim(out$meta) ## 8853 x 20
-dim(states.subset) ## 5229 x 20
+dim(states.subset) ## 5115 x 26
 
 
 ### Remove numbers, punctuation, special characters:
@@ -203,19 +206,7 @@ out$meta[which(
     out$meta$firstent %in% faction2),
          "faction"] <- "China-Egypt-India"
 
-## redist-recipro
-out$meta$cat <- "Other"
-out$meta[which(
-    out$meta$firstent %in% recip),
-         "cat"] <- "Reciprocators"
-
-out$meta[which(
-    out$meta$firstent %in% redist),
-         "cat"] <- "Redistributors"
-
-
 out$meta$faction <- as.factor(out$meta$faction)
-out$meta$cat <- as.factor(out$meta$cat)
 
 #####################
 ## K-2 Overview Model:

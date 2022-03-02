@@ -25,15 +25,16 @@ loadPkg(packs)
 load("twoTopicsAndSubSets-NoAdminSubset_CatFacRepl.Rdata")
 
 ## For summary statistics
-## see 02K2ClassificationModelRepl.R
+## see: 02BK2ClassificationAnalysisRepl.R 
 
 #####################################
 ##### Subset: Topic One-- "Process" Frame
 ######################################
 mod.out.2.meta <- out$meta
 
-## Extract paragraph-level topic assignments
+table(mod.out.2.meta$region)
 
+## Extract paragraph-level topic assignments
 theta2.out.inc <- as.data.frame(round(mod.out.2$theta, 2))  ## round to two
 
 colnames(theta2.out.inc) <- gsub(pattern="V",

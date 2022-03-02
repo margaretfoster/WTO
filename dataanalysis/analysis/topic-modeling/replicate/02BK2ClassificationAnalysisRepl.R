@@ -10,13 +10,14 @@ rm(list=ls())
 loadPkg=function(toLoad){
     for(lib in toLoad){
         if(! lib %in% installed.packages()[,1])
-            { install.packages(lib, repos='http://cran.rstudio.com/') }
-        suppressMessages( library(lib, character.only=TRUE) ) }}
+            { install.packages(lib,
+                               repos='http://cran.rstudio.com/')}
+        suppressMessages( library(lib, character.only=TRUE))}}
 
 
 packs <- c('tm', 'stm', 'pdftools',
-           'tidyr', 'quanteda', "wbstats",
-           "ggplot2", "gt")
+           "wbstats",
+           "ggplot2")
 
 loadPkg(packs)
 
@@ -42,7 +43,6 @@ colnames(theta.summary) <- gsub(pattern="V",
 
 theta.summary <- cbind(out$meta$pid, theta.summary)
 
-head(theta.summary)
 
 ## ID top topic:
 theta.summary$assignedtopic <- colnames(
@@ -71,6 +71,11 @@ paraTopicsK2 <- merge(x=out$meta,
                     by.y="out$meta$pid")
 
 dim(paraTopicsK2) ## 5115 x 31
+
+paraTopicsK2$faction <- factor(paraTopicsK2$faction,
+                               levels = c("China-Egypt-India",
+                                   "US-EU-Can",
+                                   "Other"))
 
 ## Report: Tech Appendix Figure Overview of
 ## Dominant Themes
@@ -105,12 +110,11 @@ plot.estimateEffect(prep.2,
                     labeltype="custom",
                     printlegend=FALSE,
                     n=5,
-                    linecol=c("red", "darkblue")
+                    linecol=c("darkblue", "darkgreen")
                     )
 legend("topright", legend=c(label.t1, label.t2),
-       col=c("red", "darkblue"), lty=1)
+       col=c("darkblue", "darkgreen"), lty=1)
 dev.off()
-
 
 ## Figure A2: Distribution of topic mixes
 ## In Factions
@@ -120,7 +124,10 @@ gg2 <- ggplot(dat=paraTopicsK2,
                   fill=faction))+
     geom_density(alpha=.3)+
     theme_bw()+
+    guides(fill=guide_legend(title="Faction"))+
     ggtitle("Distribution of Topic Assignment: Process")
+
+gg2
 
 ggsave(gg2, file="DistProcessFaction.png")
 
@@ -129,6 +136,7 @@ gg3 <- ggplot(dat=paraTopicsK2,
                   fill=faction))+
     geom_density(alpha=.3)+
     theme_bw()+
+    guides(fill=guide_legend(title="Faction"))+
     ggtitle("Distribution of Topic Assignment: Programs")
 
 ggsave(gg3, file="DistProgramsFaction.png")
@@ -139,6 +147,7 @@ gg4 <- ggplot(dat=paraTopicsK2,
                   fill=income_level_iso3c))+
     geom_density(alpha=.3)+
     theme_bw()+
+    guides(fill=guide_legend(title="Income Cat."))+
     ggtitle("Distribution of Topic Assignment: Process")
 
 ggsave(gg4, file="DistProcessIncome.png")
@@ -147,11 +156,78 @@ gg5 <- ggplot(dat=paraTopicsK2,
               aes(x=M2.Topic2,
                   fill=income_level_iso3c))+
     geom_density(alpha=.3)+
+        guides(fill=guide_legend(title="Income Cat."))+
     theme_bw()+
     ggtitle("Distribution of Topic Assignment: Programs")
 
 
+gg5
 ggsave(gg5, file="DistProgramsIncome.png")
+
+
+## Plot: Proportion across time in each faction
+library(dplyr)
+
+factionSum <- paraTopicsK2 %>% 
+    group_by(year, faction) %>% 
+    summarize(count=n()) %>%
+    group_by(year) %>%
+    mutate(proportion=count/sum(count))
+
+dim(factionSum) ## 78x 3
+head(factionSum)
+
+gg6 <- ggplot(factionSum,
+              aes(y = proportion,
+                  x = year)) + 
+    geom_area(aes(fill = faction), 
+              alpha = 0.5) +
+    guides(fill=guide_legend(title="Faction"))+
+    ylab("Proportion of Delegate Turns")+
+    xlab("Committee Year")+
+    theme_bw() +
+    ggtitle("Factional Activity Across Time in CTD")
+
+gg6
+
+ggsave(gg6,
+       file="FactionProportionTime.png")
+
+
+## Plot: Proportion across time in each income grouping
+
+
+incomeSum <- paraTopicsK2 %>% 
+    group_by(year, income_level_iso3c) %>% 
+    summarize(count=n()) %>%
+    group_by(year) %>%
+    mutate(proportion=count/sum(count))
+
+incomeSum$proportion <- round(incomeSum$proportion, 2)
+dim(incomeSum) ## 127 x 4
+head(incomeSum)
+
+incomeSum$income_level_iso3c <- factor(
+    incomeSum$income_level_iso3c,
+    levels=c("LIC", "LMC", "UMC", "HIC"))
+
+
+gg7 <- ggplot(incomeSum,
+              aes(y = proportion,
+                  x = year)) + 
+    geom_area(aes(fill = income_level_iso3c), 
+              alpha = 0.5) +
+    guides(fill=guide_legend(title="Income"))+
+    ylab("Proportion of Delegate Turns")+
+    xlab("Committee Year")+
+    theme_bw() +
+    ggtitle("Activity Across Time in CTD")
+
+gg7
+
+ggsave(gg7,
+       file="IncProportionTime.png")
+
 
 ############################
 ##### Table A1: Summary of delegate activities
