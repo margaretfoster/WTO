@@ -317,6 +317,7 @@ glm.reg <- sendThrough(predictedData=glm.preds,
 delg.reg <- sendThrough(predictedData=delg.preds2,
                         STMData=out3)
 
+
 library(dotwhisker)
 ## Reciprocator Prevalence
 recip.plot.all <- dwplot(list(RF=rf.reg[[1]],
@@ -400,6 +401,8 @@ others.plot.all <- dwplot(list(RF=rf.reg[[3]],
             subtitle="Other Delegate Paragraphs") +
     theme_bw()
 
+
+others.plot.all
 
 ggsave(others.plot.all,
        file="CompareCoefsGroup3500TReplDeleg.png")
@@ -549,7 +552,7 @@ rf.plot <- dwplot(list(Recip=rf.reg[[1]],
     xlab("Coefficient Estimate") +
     ylab("") +
     ggtitle("Program Theme Prevalence After Shocks",
-            subtitle="Random Forest Classification, Delegate Paragraphs") +
+            subtitle="Delegate Paragraphs (Classified in RF)") +
     theme_bw()
 
 rf.plot

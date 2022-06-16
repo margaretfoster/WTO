@@ -270,9 +270,89 @@ speakers.meta2 <- speakers.meta[!(speakers.meta$pid
 
 dim(speakers.meta2) ##8456 x 16
 
+colnames(speakers.meta2)
+
+speakers.meta2$wcount <- str_count(speakers.meta2$paratext,
+                                   pattern= "\\w+")
+
+summary(speakers.meta2$wcount)
+
+## state delegations:
+## Subset data to omit non-state speakers
+## (Here as all actors not associated with a specific geography)
+geos <- c("Aggregates",
+          "East Asia & Pacific",
+          "Europe & Central Asia",
+          "Latin America & Caribbean",
+          "Middle East & North Africa",
+          "North America",
+          "South Asia", "Sub-Saharan Africa")
+
+
+## Reprocess into a subset that is just state speakers:
+
+states.subset1 <- speakers.meta2[which(
+    speakers.meta2$region %in% geos),]
+
+dim(states.subset1)
+
+## most frequent state speakers:
+sspeakers <- as.data.frame(table(states.subset1$firstent))
+sspeakers <- sspeakers[rev(order(sspeakers$Freq)),]
+
+head(sspeakers)
+
+## Speaker-turn length:
+
+## Overall min: 6; mean 164; 4658
+summary(states.subset1$wcount)
+
+states.subset1[which(states.subset1$wcount <15 &
+                     states.subset1$firstent=="United States"),
+               c("pid", "meetingno", "paratext")]
+
+## China: min 7, max 978 ; mean 142
+summary(states.subset1[which(
+    states.subset1$firstent=="China"),"wcount"])
+
+## Canada: min 8 , max 1638 ; mean 130
+summary(states.subset1[which(
+    states.subset1$firstent=="Canada"),"wcount"])
+
+## Egypt: min 11 , max 205 ; mean 2563
+summary(states.subset1[which(
+    states.subset1$firstent=="Egypt"),"wcount"])
+
+## India: min 8 , max 1676 ; mean 198 
+summary(states.subset1[which(
+    states.subset1$firstent=="India"),"wcount"])
+
+## EU/EC: min 11, max 1733; mean 185
+summary(states.subset1[which(
+    states.subset1$firstent=="European Union"),"wcount"])
+
+## US: min 11, max 1524; mean 165
+summary(states.subset1[which(
+    states.subset1$firstent=="United States"),"wcount"])
+
+
+## Take actors in NS subset to verify separation:
+nonstate.subset1 <- subset(speakers.meta2,
+                           !(region %in% geos))
+
+dim(nonstate.subset1) ## 3341
+
+
+## check speakers in non-state subset:
+nsspeakers <- as.data.frame(table(nonstate.subset1$firstent))
+nsspeakers <- nsspeakers[rev(order(nsspeakers$Freq)),]
+
+nsspeakers
+                           
 #################
 ##### Clean Text for Topic Models
 ##################
+
 
 pageMarkupStopWords <- c("hyperref", "toc", "wtcomtdw",
                          "pageref") ## not meeting content
@@ -408,10 +488,12 @@ summary(out$meta[which(
 ######################
 ## Subset data to omit non-state speakers
 ## (Here as all actors not associated with a specific geography)
-geos <- c("Aggregates", "East Asia & Pacific",
+geos <- c("Aggregates",
+          "East Asia & Pacific",
           "Europe & Central Asia",
           "Latin America & Caribbean",
-          "Middle East & North Africa", "North America",
+          "Middle East & North Africa",
+          "North America",
           "South Asia", "Sub-Saharan Africa")
 
 
@@ -420,7 +502,7 @@ geos <- c("Aggregates", "East Asia & Pacific",
 states.subset <- out$meta[which(out$meta$region %in% geos),]
 
 dim(out$meta) ## 8853 x 20
-dim(states.subset) ## 5229 x 20
+dim(states.subset) ## 5115 x 20
 
 
 ### Remove numbers, punctuation, special characters:
